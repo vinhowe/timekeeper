@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <AutoCompleteTextView
+        tools:text="clean room"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/taskTitleLabel"
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:textColor="?android:attr/textColorPrimary"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp">
+        <requestFocus/>
+    </AutoCompleteTextView>
+
+    <CheckBox
+        android:id="@+id/taskDynamicCheckbox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="dynamic"
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:textColor="?android:attr/textColorPrimary"
+        app:buttonTint="?android:attr/textColorPrimary"
+        style="@android:style/Widget.Material.CompoundButton.CheckBox"
+        android:layout_marginStart="16dp"
+        android:gravity="center_vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"/>
+
+    <EditText
+        android:text="1 minute"
+        android:focusable="true"
+        android:inputType="number"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/taskDurationLabel"
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:textColor="?android:attr/textColorPrimary"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        />
+</LinearLayout>

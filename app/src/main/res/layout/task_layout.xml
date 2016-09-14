@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:padding="24dp"
+    android:weightSum="4"
+    android:gravity="center_vertical"
+    android:layout_height="wrap_content">
+    <TextView
+        android:id="@+id/taskLabel"
+        tools:text="clean up room"
+        android:textAlignment="textStart"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Display1"
+        android:textColor="?android:attr/textColorPrimary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <ImageView
+        android:id="@+id/taskDurationIcon"
+        android:src="@drawable/ic_schedule_black_24dp"
+        android:alpha="0.65"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/taskDuration"
+        android:layout_alignBottom="@id/taskDuration"/>
+    <TextView
+        android:id="@+id/taskDuration"
+        tools:text="30:00"
+        android:layout_toEndOf="@id/taskDurationIcon"
+        android:layout_marginStart="@dimen/padding_small"
+        android:layout_below="@id/taskLabel"
+        android:textAlignment="textEnd"
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:textColor="?android:attr/textColorSecondary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</RelativeLayout>

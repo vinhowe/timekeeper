@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#2196F3</color>
+    <color name="colorPrimaryDark">#1976D2</color>
+    <color name="colorAccent">#2979FF</color>
+    <color name="task_duration_text_color">#FFFFFF</color>
+    <color name="colorAccentTwo">#2962FF</color>
+    <array name="palette">
+        <item>#E3F2FD</item>
+        <item>#BBDEFB</item>
+        <item>#90CAF9</item>
+        <item>#64B5F6</item>
+        <item>#42A5F5</item>
+        <item>#2196F3</item>
+        <item>#1E88E5</item>
+        <item>#1976D2</item>
+        <item>#1565C0</item>
+        <item>#0D47A1</item>
+    </array>
+</resources>

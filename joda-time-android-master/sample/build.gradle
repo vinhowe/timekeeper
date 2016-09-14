@@ -1,0 +1,32 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion '24.0.0'
+
+    defaultConfig {
+        versionCode 1
+        versionName '1.0'
+        minSdkVersion 9
+        targetSdkVersion 24
+
+        proguardFiles getDefaultProguardFile('proguard-android.txt')
+    }
+
+    // We're enabling proguard just to prove we don't have to do anything
+    // special to get this build to work with proguard.
+    buildTypes {
+        debug {
+            minifyEnabled true
+            shrinkResources true
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile project(':library')
+}

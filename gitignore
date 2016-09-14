@@ -1,0 +1,25 @@
+# Locally gitignore file extension exclusion list
+
+# Credit to Will Watson
+
+# Android Studio
+*.iml
+.idea
+.gradle
+build
+*.iml
+*.iws
+*.ipr
+
+# Our App Library folder
+
+app/libs/
+
+
+#built application files
+*.apk
+*.ap_
+
+#misc
+local.properties
+.DS_Store
