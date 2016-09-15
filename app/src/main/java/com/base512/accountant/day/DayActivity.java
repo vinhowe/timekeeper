@@ -56,6 +56,7 @@ public class DayActivity extends AppCompatActivity implements DayFragment.OnFrag
                 .inject(this);
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);

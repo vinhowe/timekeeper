@@ -9,7 +9,8 @@
     app:layout_collapseMode="pin"
     tools:context=".day.DayFragment"
     tools:showIn="@layout/fragment_day"
-    app:layout_scrollFlags="scroll|enterAlways">
+    app:layout_scrollFlags="scroll|enterAlways"
+    android:id="@+id/taskCounter">
 
     <TextView
         android:layout_width="wrap_content"

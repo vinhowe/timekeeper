@@ -211,31 +211,30 @@ public class DaysRepository implements DaysDataSource {
 
     }
 
+    @Deprecated
     @Override
     public void setDayCurrentTask(@NonNull String dayId, @NonNull final String taskId) {
-        checkNotNull(dayId, "Day ID cannot be null");
-        checkArgument(dayId.length() > 0, "Day ID cannot be empty");
-        checkNotNull(taskId, "Task ID cannot be empty");
 
-        DatabaseReference dayReference = mDatabaseReference.child(dayId);
-
-        DatabaseReference dayCurrentTaskReference = dayReference.child("currentTask");
-
-        dayCurrentTaskReference.setValue(taskId);
     }
 
     @Override
-    public void setDayCurrentTask(@NonNull String dayId, @NonNull DayTask dayTask) {
-        if(dayTask.getAccumulatedTime().isPresent()) {
+    public void setDayCurrentTask(@NonNull final String dayId, @NonNull final DayTask dayTask) {
+        if(dayTask.getAccumulatedTime() != 0) {
             final DatabaseReference dayReference = mDatabaseReference.child(dayId);
 
-            final DatabaseReference taskReference = dayReference.child("tasks").child(dayTask.getId().get());
+            DatabaseReference dayCurrentTaskReference = dayReference.child("currentTask");
 
-            taskReference.child("accumulatedTime").setValue(dayTask.getTotalTime().get());
-            taskReference.child("lastStartTime").setValue(dayTask.getLastStartTime().get());
-            taskReference.child("state").setValue(dayTask.getState().ordinal());
+            dayCurrentTaskReference.setValue(dayTask.getId().get());
+
+            dayReference.child("tasks").child(dayTask.getId().get()).child("state").setValue(dayTask.getState().ordinal());
+            dayReference.child("tasks").child(dayTask.getId().get()).child("accumulatedTime").setValue(dayTask.getTotalTime().get());
+            if(dayTask.getLastStartTime().get() == Long.MIN_VALUE) {
+                dayReference.child("lastStartTime").removeValue();
+            } else {
+                dayReference.child("tasks").child(dayTask.getId().get()).child("lastStartTime").setValue(dayTask.getLastStartTime().get());
+            }
         }
-        setDayCurrentTask(dayId, dayTask.getId().get());
+
     }
 
     @Override
@@ -268,8 +267,8 @@ public class DaysRepository implements DaysDataSource {
             taskReference = new DayTask(taskReferenceSnapshot.getKey(),
                     DayTask.TaskState.values()[taskReferenceSnapshot.child("state").getValue(Integer.class)],
                     taskReferenceSnapshot.child("order").getValue(Integer.class),
-                    taskReferenceSnapshot.child("lastStartTime").exists() ? taskReferenceSnapshot.child("lastStartTime").getValue(Long.class) : -1,
-                    taskReferenceSnapshot.child("accumulatedTime").exists() ? taskReferenceSnapshot.child("accumulatedTime").getValue(Long.class) : -1);
+                    taskReferenceSnapshot.child("lastStartTime").exists() ? taskReferenceSnapshot.child("lastStartTime").getValue(Long.class) : 0,
+                    taskReferenceSnapshot.child("accumulatedTime").exists() ? taskReferenceSnapshot.child("accumulatedTime").getValue(Long.class) : 0);
             taskReferencesList.set(taskReference.getOrder().get(), taskReference);
         }
         LinkedHashMap<String, DayTask> taskReferences = new LinkedHashMap<>();

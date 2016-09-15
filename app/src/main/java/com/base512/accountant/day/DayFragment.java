@@ -3,15 +3,19 @@ package com.base512.accountant.day;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatImageButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.base512.accountant.R;
 import com.base512.accountant.data.Day;
@@ -51,6 +55,14 @@ public class DayFragment extends Fragment implements DayContract.View {
 
     @BindView(R.id.noUpcomingTasksLabel) TextView mNoUpcomingTasksLabel;
 
+    @BindView(R.id.dayTaskCompleteButton) AppCompatImageButton mCompleteButton;
+
+    @BindView(R.id.dayTaskPauseButton) AppCompatImageButton mPauseButton;
+
+    @BindView(R.id.dayTaskSkipButton) AppCompatImageButton mSkipButton;
+
+    @BindView(R.id.taskCounter) View mContainer;
+
     public DayFragment() {
         // Required empty public constructor
     }
@@ -73,6 +85,30 @@ public class DayFragment extends Fragment implements DayContract.View {
         mToolbar = (Toolbar) root.findViewById(R.id.toolbar);
         ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
         ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(null);
+
+        mCompleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPresenter.completeTask();
+                Toast.makeText(getContext(), "Completing task", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        mPauseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPresenter.pauseTask();
+                Toast.makeText(getContext(), "Pausing task", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        mSkipButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPresenter.skipTask();
+                Toast.makeText(getContext(), "Skipping task", Toast.LENGTH_LONG).show();
+            }
+        });
 
         return root;
     }
@@ -107,6 +143,7 @@ public class DayFragment extends Fragment implements DayContract.View {
         super.onResume();
         mPresenter.start();
         mPresenter.updateTime();
+        mPresenter.startUpdatingTime();
     }
 
     @Override
@@ -145,8 +182,9 @@ public class DayFragment extends Fragment implements DayContract.View {
     }
 
     @Override
-    public void setNoUpcomingTasksIndicator(boolean visible) {
+    public void setNoTasksIndicator(boolean visible) {
         mNoUpcomingTasksLabel.setVisibility(visible ? View.VISIBLE : View.GONE);
+        mContainer.setVisibility(!visible ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -161,7 +199,7 @@ public class DayFragment extends Fragment implements DayContract.View {
 
     @Override
     public void setTimeElapsed(long totalTime) {
-        String currentTime = TimeUtils.formatMinutes(totalTime / 1000 / 60, true);
+        String currentTime = TimeUtils.formatMinutes(totalTime / 60, true);
         mCurrentTaskDuration.setText(Phrase.from("{time} so far").put("time", currentTime).format());
     }
 
@@ -178,6 +216,11 @@ public class DayFragment extends Fragment implements DayContract.View {
     @Override
     public void removeTimingRunnable(Runnable timeUpdateRunnable) {
         mCurrentTaskDuration.removeCallbacks(timeUpdateRunnable);
+    }
+
+    @Override
+    public void setPaused(boolean paused) {
+        mPauseButton.setImageResource(paused ? R.drawable.ic_play_arrow_white_48px : R.drawable.ic_pause_white_48px);
     }
 
     @Override

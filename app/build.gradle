@@ -46,7 +46,6 @@ dependencies {
     compile "com.google.dagger:dagger:$rootProject.ext.daggerVersion"
     compile "com.google.guava:guava:$rootProject.ext.guavaVersion"
     compile "net.danlew:android.joda:$rootProject.ext.jodaVersion"
-    compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha7'
     compile 'com.jakewharton:butterknife:8.4.0'
     compile 'com.squareup.phrase:phrase:1.1.0'
     apt 'com.jakewharton:butterknife-compiler:8.4.0'
@@ -67,6 +66,7 @@ dependencies {
     androidTestCompile "com.android.support:recyclerview-v7:$rootProject.ext.supportLibraryVersion"
 
 
+    compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha7'
 }
 
 apply plugin: 'com.google.gms.google-services'

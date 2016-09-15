@@ -30,7 +30,7 @@ public interface DayContract {
 
         void showLoadingUpcomingTasksError();
 
-        void setNoUpcomingTasksIndicator(boolean visible);
+        void setNoTasksIndicator(boolean visible);
 
         void setLayoutManager(RecyclerView.LayoutManager layoutManager);
 
@@ -41,6 +41,8 @@ public interface DayContract {
         void updateTimingRunnable(Runnable timeUpdateRunnable, long delay);
 
         void removeTimingRunnable(Runnable timeUpdateRunnable);
+
+        void setPaused(boolean b);
     }
 
     interface Presenter extends BasePresenter {
@@ -70,5 +72,11 @@ public interface DayContract {
         void saveDay();
 
         void pauseTask();
+
+        void completeTask();
+
+        void skipTask();
+
+        void showNextTask();
     }
 }
