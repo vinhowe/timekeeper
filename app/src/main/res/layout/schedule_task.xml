@@ -21,8 +21,8 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:id="@+id/taskStartTimeLabel"
         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
         android:textColor="?android:attr/textColorPrimaryInverse"
@@ -33,22 +33,24 @@
         android:layout_marginTop="8dp" />
 
     <TextView
-        tools:text="clean room"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        tools:text="very very long, incredibly detailed task title"
+        android:layout_height="0dp"
         android:id="@+id/taskTitleLabel"
         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
         android:textColor="?android:attr/textColorPrimary"
         app:layout_constraintTop_toTopOf="@+id/taskBackground"
         app:layout_constraintStart_toStartOf="@+id/taskBackground"
+        app:layout_constraintEnd_toEndOf="@+id/taskBackground"
         android:layout_marginTop="16dp"
+        app:layout_constraintLeft_toLeftOf="@+id/taskBackground"
+        app:layout_constraintRight_toRightOf="@+id/taskBackground"
         android:layout_marginStart="16dp"
-        tools:layout_editor_absoluteX="95dp" />
+        android:layout_width="0dp" />
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_schedule_black_24dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/ic_hourglass_full_black_24dp"
         android:layout_marginTop="8dp"
         app:layout_constraintLeft_toLeftOf="@+id/taskTitleLabel"
         app:layout_constraintTop_toBottomOf="@+id/taskTitleLabel"
@@ -58,8 +60,8 @@
 
     <TextView
         tools:text="five minutes"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:id="@+id/taskDurationLabel"
         android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
         android:textColor="?android:attr/textColorSecondary"

@@ -24,7 +24,6 @@ import org.joda.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -96,6 +95,10 @@ public class TasksAdapter extends RecyclerView.Adapter implements ItemTouchHelpe
         //repositoriesListActivity.onRepositoryClick(repositories.get(adapterPosition));
     }
 
+    public void addChangeListener(ScheduleChangeListener scheduleChangeListener) {
+        scheduleChangeListeners.add(scheduleChangeListener);
+    }
+
     public void updateTasksList(ArrayList<Task> tasks, boolean schedule) {
         mIsSchedule = schedule;
         mTasks.clear();
@@ -109,27 +112,26 @@ public class TasksAdapter extends RecyclerView.Adapter implements ItemTouchHelpe
             taskTime = taskTime.plusMinutes(tasksAdapter.mTasks.get(i).getDuration());
         }
 
-        return taskTime.toString("H:mm");
+        return taskTime.toString("HH:mm");
     }
 
     @Override
     public void onItemMove(int fromPosition, int toPosition) {
         Collections.swap(mTasks, fromPosition, toPosition);
         notifyItemMoved(fromPosition, toPosition);
-        updateTimes();
+        Iterator<ScheduleChangeListener> listenerIterator = scheduleChangeListeners.iterator();
+        while(listenerIterator.hasNext()) {
+            listenerIterator.next().onScheduleChanged();
+        }
     }
 
     @Override
     public void onItemDismiss(int position) {
         mTasks.remove(position);
         notifyItemRemoved(position);
-        updateTimes();
-    }
-
-    public void updateTimes() {
         Iterator<ScheduleChangeListener> listenerIterator = scheduleChangeListeners.iterator();
         while(listenerIterator.hasNext()) {
-            listenerIterator.next().onScheduleChange();
+            listenerIterator.next().onScheduleChanged();
         }
     }
 
@@ -150,22 +152,25 @@ public class TasksAdapter extends RecyclerView.Adapter implements ItemTouchHelpe
         @Override
         public void bind(Task task) {
             mTaskLabel.setText(task.getLabel());
-            // TODO Make a utility class for time parsing
-            mTaskDuration.setText(task.getDuration()+" minutes");
-            itemView.setBackgroundColor(mBackgroundColors.getColor(getAdapterPosition(),0));
-            if(getAdapterPosition()%mBackgroundColors.length() >= TEXT_INVERSE_POSITION) {
-                invertText();
+            mTaskDuration.setText(formatMinutes(task.getDuration()));
+            float timePosition = (Math.min(1, (float)task.getDuration() / 60f) * mBackgroundColors.length())-1f;
+            itemView.setBackgroundColor(mBackgroundColors.getColor((int)timePosition,0));
+            if(timePosition >= TEXT_INVERSE_POSITION) {
+                invertText(true);
+            } else {
+                invertText(false);
             }
         }
 
-        private void invertText() {
-            TypedArray colorValues = itemView.getContext().getTheme().obtainStyledAttributes(R.style.AppTheme, textAttrs);
-            int primaryText = colorValues.getColor(0, Color.WHITE);
-            int secondaryText = colorValues.getColor(1, Color.WHITE);
+        private void invertText(boolean isInverted) {
+            TypedArray colorValues = itemView.getContext().getTheme().obtainStyledAttributes(R.style.AppTheme, isInverted ? textAttrsInverse : textAttrs);
+            int primaryText = colorValues.getColor(0, isInverted ? Color.WHITE : Color.BLACK);
+            int secondaryText = colorValues.getColor(1, isInverted ? Color.WHITE : Color.BLACK);
 
             mTaskLabel.setTextColor(primaryText);
             mTaskDuration.setTextColor(secondaryText);
-            mTaskDurationIcon.setImageDrawable(itemView.getResources().getDrawable(R.drawable.ic_schedule_white_24dp, itemView.getContext().getTheme()));
+            mTaskDurationIcon.setImageDrawable(itemView.getResources().getDrawable(R.drawable.ic_hourglass_full_white_24dp, itemView.getContext().getTheme()));
+            mTaskDurationIcon.setColorFilter(isInverted ? Color.WHITE : Color.BLACK);
         }
 
     }
@@ -190,22 +195,26 @@ public class TasksAdapter extends RecyclerView.Adapter implements ItemTouchHelpe
         @Override
         public void bind(Task task) {
             mTaskTitleLabel.setText(task.getLabel());
-            mTaskDurationLabel.setText(formatMinutes(task.getDuration(), true));
-            mTaskBackground.setBackgroundColor(mBackgroundColors.getColor(getAdapterPosition()%mBackgroundColors.length(),0));
+            mTaskDurationLabel.setText(formatMinutes(task.getDuration()));
+            float timePosition = (Math.min(1, (float)task.getDuration() / 60f) * mBackgroundColors.length())-1f;
+            mTaskBackground.setBackgroundColor(mBackgroundColors.getColor((int)timePosition,0));
             mTaskStartTimeLabel.setText(getTimeForPosition(getAdapterPosition(), mTasksAdapter));
-            if(getAdapterPosition()%mBackgroundColors.length() >= TEXT_INVERSE_POSITION) {
-                invertText();
+            if(timePosition >= TEXT_INVERSE_POSITION) {
+                invertText(true);
+            } else {
+                invertText(false);
             }
         }
 
-        private void invertText() {
-            TypedArray colorValues = itemView.getContext().getTheme().obtainStyledAttributes(R.style.AppTheme, textAttrs);
-            int primaryText = colorValues.getColor(0, Color.WHITE);
-            int secondaryText = colorValues.getColor(1, Color.WHITE);
+        private void invertText(boolean isInverted) {
+            TypedArray colorValues = itemView.getContext().getTheme().obtainStyledAttributes(R.style.AppTheme, isInverted ? textAttrsInverse : textAttrs);
+            int primaryText = colorValues.getColor(0, isInverted ? Color.WHITE : Color.BLACK);
+            int secondaryText = colorValues.getColor(1, isInverted ? Color.WHITE : Color.BLACK);
 
             mTaskTitleLabel.setTextColor(primaryText);
             mTaskDurationLabel.setTextColor(secondaryText);
-            mTaskDurationIcon.setImageDrawable(itemView.getResources().getDrawable(R.drawable.ic_schedule_white_24dp, itemView.getContext().getTheme()));
+            mTaskDurationIcon.setImageDrawable(itemView.getResources().getDrawable(R.drawable.ic_hourglass_full_white_24dp, itemView.getContext().getTheme()));
+            mTaskDurationIcon.setColorFilter(isInverted ? Color.WHITE : Color.BLACK);
         }
 
         @Override
@@ -219,28 +228,18 @@ public class TasksAdapter extends RecyclerView.Adapter implements ItemTouchHelpe
         }
 
         @Override
-        public void onScheduleChange() {
+        public void onScheduleChanged() {
+/*            Task task = mTasksAdapter.mTasks.get(getLayoutPosition());
+            float timePosition = (Math.min(1, (float)task.getDuration() / 60f) * mBackgroundColors.length())-1f;
+            mTaskBackground.setBackgroundColor(mBackgroundColors.getColor((int)timePosition,0));*/
             mTaskStartTimeLabel.setText(getTimeForPosition(getAdapterPosition(), mTasksAdapter));
+            /*if(timePosition >= TEXT_INVERSE_POSITION) {
+                invertText();
+            }*/
         }
     }
 
-    static class ScheduleTasksViewHolderEditable extends ScheduleTasksViewHolder {
-
-        public ScheduleTasksViewHolderEditable(ViewGroup parent, TasksAdapter tasksAdapter) {
-            super((ViewGroup) LayoutInflater.from(parent.getContext()).inflate(R.layout.schedule_task_edit, parent, false), tasksAdapter);
-        }
-
-        @Override
-        public void bind(Task task) {
-            mTaskTitleLabel.setText(task.getLabel());
-            // TODO Make a utility class for time parsing
-            mTaskDurationLabel.setText(task.getDuration()+" minutes");
-            mTaskStartTimeLabel.setText(getTimeForPosition(getAdapterPosition(), mTasksAdapter));
-            mTaskBackground.setBackgroundResource(R.drawable.border);
-        }
-    }
-
-    private interface ScheduleChangeListener{
-        void onScheduleChange();
+    public interface ScheduleChangeListener{
+        void onScheduleChanged();
     }
 }

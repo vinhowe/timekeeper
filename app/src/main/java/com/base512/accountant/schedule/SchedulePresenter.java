@@ -26,14 +26,13 @@ import com.base512.accountant.tasks.TasksAdapter;
 import com.base512.accountant.util.TimeUtils;
 import com.base512.accountant.views.OnDragStartListener;
 import com.base512.accountant.views.SimpleItemTouchHelperCallback;
-import com.google.common.base.Optional;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 import javax.inject.Inject;
 
-public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStartListener {
+public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStartListener{
 
     private final ScheduleContract.View mScheduleView;
     private final DaysRepository mDaysRepository;
@@ -46,6 +45,8 @@ public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStar
     private Day mCurrentDay;
 
     private boolean mFirstLoad = true;
+
+    private LinkedHashMap<String, DayTask> mDayTasks;
 
     /**
      * Dagger strictly enforces that arguments not marked with {@code @Nullable} are not injected
@@ -89,8 +90,11 @@ public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStar
             mTasksRepository.saveTask(task, new BaseDataSource.UpdateDataCallback() {
                 @Override
                 public void onDataUpdated(String id) {
-                    mDaysRepository.addDayTask(mCurrentDay, new DayTask(id, DayTask.TaskState.NONE));
-                    loadSchedule(true);
+                    //mDaysRepository.addDayTask(mCurrentDay, new DayTask(id, DayTask.TaskState.NONE));\
+                    mTasksAdapter.mTasks.add(new Task(task.getLabel(), id, task.getDuration()));
+                    mTasksAdapter.notifyDataSetChanged();
+                    saveTasks();
+                    //loadSchedule(true);
                 }
 
                 @Override
@@ -99,8 +103,11 @@ public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStar
                 }
             });
         } else {
-            mDaysRepository.addDayTask(mCurrentDay, new DayTask(task));
-            loadSchedule(true);
+            //mDaysRepository.addDayTask(mCurrentDay, new DayTask(task));
+            mTasksAdapter.mTasks.add(task);
+            mTasksAdapter.notifyDataSetChanged();
+            saveTasks();
+            //loadSchedule(true);
         }
     }
 
@@ -133,7 +140,15 @@ public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStar
             tasks.put(task.getId().get(), new DayTask(task.getId().get(), DayTask.TaskState.NONE));
         }
         mCurrentDay = new Day(mCurrentDay.getDate(), mCurrentDay.getId().get(), tasks);
-        mDaysRepository.saveDay(mCurrentDay, new BaseDataSource.UpdateDataCallback() {
+        LinkedHashMap<String, DayTask> updatedDayTasks = new LinkedHashMap<>();
+        for (int i = 0; i < mTasksAdapter.mTasks.size(); i++) {
+            if(mDayTasks.containsKey(mTasksAdapter.mTasks.get(i).getId().get())) {
+                updatedDayTasks.put(mTasksAdapter.mTasks.get(i).getId().get(), mDayTasks.get(mTasksAdapter.mTasks.get(i).getId().get()).withOrder(i));
+            } else {
+                updatedDayTasks.put(mTasksAdapter.mTasks.get(i).getId().get(), new DayTask(mTasksAdapter.mTasks.get(i)).withOrder(i));
+            }
+        }
+        mDaysRepository.updateDayTasks(mCurrentDay, new ArrayList<>(mDayTasks.values()), updatedDayTasks, new BaseDataSource.UpdateDataCallback() {
             @Override
             public void onDataUpdated(String id) {
 
@@ -168,12 +183,14 @@ public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStar
                     public void onDataLoaded(DataObject dataObject) {
                         mCurrentDay = (Day) dataObject;
                         if (mCurrentDay.getTasks().size() > 0) {
-                            for (DayTask task : mCurrentDay.getTasks().values()) {
+                            mDayTasks = mCurrentDay.getTasks();
+                            for (DayTask task : mDayTasks.values()) {
                                 tasksToShow.add((Task) tasks.get(task.getId().get()));
                             }
                             mTasksAdapter.updateTasksList(tasksToShow, true);
                             mScheduleView.setTasksAdapter(mTasksAdapter);
                         } else {
+                            mDayTasks = new LinkedHashMap<>();
                             mScheduleView.setNoTasksIndicator(true);
                         }
                     }

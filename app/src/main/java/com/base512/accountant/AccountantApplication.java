@@ -18,6 +18,8 @@ import com.base512.accountant.data.source.tasks.TasksRepositoryModule;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
+import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
+
 public class AccountantApplication extends Application {
 
 /*        private UserRepositoryComponent mRepositoryComponent;
@@ -39,6 +41,11 @@ public class AccountantApplication extends Application {
                     .daysRepositoryModule(new DaysRepositoryModule())
                     .tasksRepositoryModule(new TasksRepositoryModule())
                     .build();
+            CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
+                    .setDefaultFontPath("fonts/Gilroy-Light.otf")
+                    .setFontAttrId(R.attr.fontPath)
+                    .build()
+            );
             JodaTimeAndroid.init(this);
         }
 

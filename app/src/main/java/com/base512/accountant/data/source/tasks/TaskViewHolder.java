@@ -13,7 +13,8 @@ import com.base512.accountant.data.Task;
 public abstract class TaskViewHolder extends RecyclerView.ViewHolder {
 
     protected TypedArray mBackgroundColors;
-    protected int[] textAttrs = {android.R.attr.textColorPrimaryInverse, android.R.attr.textColorSecondaryInverse};
+    protected int[] textAttrs = {android.R.attr.textColorPrimary, android.R.attr.textColorSecondary};
+    protected int[] textAttrsInverse = {android.R.attr.textColorPrimaryInverse, android.R.attr.textColorSecondaryInverse};
     protected final static int TEXT_INVERSE_POSITION = 4;
 
     public TaskViewHolder(View itemView) {

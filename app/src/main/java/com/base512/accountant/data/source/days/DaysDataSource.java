@@ -15,6 +15,8 @@ import com.base512.accountant.data.Task;
 import com.base512.accountant.data.source.AccessDataCallback;
 import com.base512.accountant.data.source.BaseDataSource;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public interface DaysDataSource extends BaseDataSource {
@@ -23,9 +25,13 @@ public interface DaysDataSource extends BaseDataSource {
 
     void getDay(@NonNull String dayId, @NonNull GetDataCallback callback);
 
+    void getToday(@NonNull GetDataCallback callback);
+
     void getDayByDate(long instant, @NonNull GetDataCallback callback);
 
     void saveDay(@NonNull Day day, UpdateDataCallback callback);
+
+    void updateDayTasks(@NonNull Day day, @NonNull ArrayList<DayTask> beforeTasks, @NonNull LinkedHashMap<String, DayTask> afterTasks, UpdateDataCallback callback);
 
     void addDayTask(@NonNull String dayId, @NonNull DayTask task);
 
@@ -37,17 +43,17 @@ public interface DaysDataSource extends BaseDataSource {
 
     void removeDayTask(@NonNull Day day, @NonNull String taskId);
 
-    void removeDayTask(@NonNull Day day, @NonNull Task task);
+    void removeDayTask(@NonNull Day day, @NonNull DayTask task);
 
     void removeDayTask(@NonNull String dayId, @NonNull String taskId);
 
-    void removeDayTask(@NonNull String dayId, @NonNull Task task);
+    void removeDayTask(@NonNull String dayId, @NonNull DayTask task);
 
-    void completeTaskInDay(@NonNull Day day, @NonNull Task task);
+    void completeTaskInDay(@NonNull Day day, @NonNull DayTask task);
 
     void completeTaskInDay(@NonNull Day day, @NonNull String taskId);
 
-    void completeTaskInDay(@NonNull String dayId, @NonNull Task task);
+    void completeTaskInDay(@NonNull String dayId, @NonNull DayTask task);
 
     void completeTaskInDay(@NonNull String dayId, @NonNull String taskId);
 
@@ -59,4 +65,5 @@ public interface DaysDataSource extends BaseDataSource {
 
     void setDayCurrentTask(@NonNull Day day, @NonNull DayTask dayTask);
 
+    void setDayState(String dayId, Day.State dayState);
 }

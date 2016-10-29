@@ -68,7 +68,7 @@ public class ExampleInstrumentedTest {
     }
 
     @Test
-    public void addHour() {
-        assertEquals("Coult not add to hours", "1.0", getText(withId(R.id.workDayHoursCount)));
+    public void showNotification() {
+
     }
 }

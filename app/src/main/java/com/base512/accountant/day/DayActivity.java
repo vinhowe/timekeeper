@@ -21,6 +21,8 @@ import com.base512.accountant.util.ActivityUtils;
 
 import javax.inject.Inject;
 
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
+
 public class DayActivity extends AppCompatActivity implements DayFragment.OnFragmentInteractionListener {
 
     @Inject DayPresenter mDayPresenter;
@@ -70,6 +72,11 @@ public class DayActivity extends AppCompatActivity implements DayFragment.OnFrag
     }
 
     @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -77,7 +84,7 @@ public class DayActivity extends AppCompatActivity implements DayFragment.OnFrag
         int id = item.getItemId();
 
         if(id == R.id.action_schedule) {
-            ActivityUtils.openActivity(this, ScheduleActivity.class);
+            showSchedule();
         }
 
         return super.onOptionsItemSelected(item);
@@ -96,5 +103,9 @@ public class DayActivity extends AppCompatActivity implements DayFragment.OnFrag
     @Override
     public void onFragmentInteraction(Uri uri) {
 
+    }
+
+    public void showSchedule() {
+        ActivityUtils.openActivity(this, ScheduleActivity.class);
     }
 }

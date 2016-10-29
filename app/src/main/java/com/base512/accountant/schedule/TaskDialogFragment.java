@@ -172,7 +172,7 @@ public class TaskDialogFragment extends DialogFragment {
             // Don't allow user to input label with only whitespace.
             label = "";
         }
-
+        label = label.toLowerCase();
         if (mTask != null) {
             if(mTask.getId().isPresent() && !mIsUnique) {
                 ((TaskLabelDialogHandler) getActivity()).onDialogTaskSet(mTask, mPosition, mIsUnique);

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="horizontal" android:layout_width="match_parent"
     android:padding="24dp"
     android:weightSum="4"
@@ -14,10 +15,11 @@
         android:textColor="?android:attr/textColorPrimary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
-    <ImageView
+    <android.support.v7.widget.AppCompatImageView
         android:id="@+id/taskDurationIcon"
-        android:src="@drawable/ic_schedule_black_24dp"
-        android:alpha="0.65"
+        android:src="@drawable/ic_hourglass_full_black_24dp"
+        android:alpha="0.60"
+        android:tint="#000"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/taskDuration"
@@ -29,7 +31,8 @@
         android:layout_marginStart="@dimen/padding_small"
         android:layout_below="@id/taskLabel"
         android:textAlignment="textEnd"
-        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+        style="@style/TextBold.Sub"
         android:textColor="?android:attr/textColorSecondary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

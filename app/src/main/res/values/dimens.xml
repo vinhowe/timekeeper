@@ -9,4 +9,5 @@
     <dimen name="day_action_internal_padding">8dp</dimen>
     <dimen name="padding_small">8dp</dimen>
     <dimen name="padding_tiny">2dp</dimen>
+    <dimen name="notification_action_padding">16dp</dimen>
 </resources>

@@ -10,6 +10,7 @@ import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.base512.accountant.data.DataObject;
 import com.base512.accountant.data.Day;
@@ -94,7 +95,23 @@ public class DayPresenter implements DayContract.Presenter {
 
     @Override
     public void setCurrentTask(@NonNull DayTask dayTask, @NonNull Task task) {
-        mCurrentDay = mCurrentDay.setCurrentTask(dayTask.start());
+        Log.d(DayPresenter.class.getSimpleName(), dayTask.getState().toString());
+        mCurrentDay = mCurrentDay.setCurrentTask((dayTask.getState() == DayTask.TaskState.NONE) ? dayTask.start() : dayTask);
+        if(dayTask.getState() == DayTask.TaskState.PAUSED) {
+            mDayView.setPaused(true);
+            // Update time once to show current paused time
+            updateTime();
+            stopUpdatingTime();
+            saveDay();
+        } else if (dayTask.getState() == DayTask.TaskState.COMPLETE || dayTask.getState() == DayTask.TaskState.SKIPPED) {
+            showNextTask();
+        } else {
+            Toast.makeText(((DayFragment)(mDayView)).getContext(), "continuing task", Toast.LENGTH_LONG).show();
+            mDayView.setPaused(false);
+            startUpdatingTime();
+            saveDay();
+        }
+
         mDayView.showCurrentTask(task);
     }
 
@@ -113,34 +130,52 @@ public class DayPresenter implements DayContract.Presenter {
         mTasksRepository.getTasks(new TasksDataSource.LoadDataCallback() {
             @Override
             public void onDataLoaded(final LinkedHashMap<String, DataObject> tasks) {
-                final ArrayList<Task> tasksToShow = new ArrayList<>();
+                final LinkedHashMap<String, Task> tasksToShow = new LinkedHashMap<>();
                 mDaysRepository.getDayByDate(TimeUtils.getMidnightTime(), new DaysDataSource.GetDataCallback() {
                     @Override
                     public void onDataLoaded(DataObject dataObject) {
                         Day day = (Day) dataObject;
                         if(day.getTasks().size() > 0) {
-                            for (DayTask task : day.getTasks().values()) {
-                                tasksToShow.add((Task)tasks.get(task.getId().get()));
+                            for (DayTask dayTask : day.getTasks().values()) {
+                                Task task = (Task)tasks.get(dayTask.getId().get());
+                                tasksToShow.put(task.getId().get(), task);
                             }
                             mCurrentDay = day;
                             if(mCurrentDay.getCurrentTask().isPresent()) {
                                 setCurrentTask(day.getCurrentTask().get(), (Task) tasks.get(day.getCurrentTask().get().getId().get()));
+                                tasksToShow.remove(day.getCurrentTask().get().getId().get());
+                                mTasksAdapter.updateTasksList(new ArrayList(tasksToShow.values()), false);
                             } else {
-                                setCurrentTask(new ArrayList<>(day.getTasks().values()).get(0), tasksToShow.get(0));
+                                setCurrentTask(new ArrayList<>(day.getTasks().values()).get(0), new ArrayList<>(tasksToShow.values()).get(0));
+                                ArrayList upcomingTasks = new ArrayList(tasksToShow.values());
+                                mTasksAdapter.updateTasksList(new ArrayList<>(upcomingTasks.subList(1,tasksToShow.size())), false);
                             }
-                            mTasksAdapter.updateTasksList(tasksToShow, false);
+                            mTasksAdapter.updateTasksList(new ArrayList(tasksToShow.values()), false);
                             mDayView.setUpcomingTaskAdapter(mTasksAdapter);
-                            startUpdatingTime();
-                            saveDay();
-                            mDayView.setNoTasksIndicator(false);
+                            mDayView.setNoTasksIndicator(false, false);
                         } else {
-                            mDayView.setNoTasksIndicator(true);
+                            if(!day.getState().equals(Day.State.COMPLETE)) {
+                                mDayView.showSchedule();
+                            }
+                            mDayView.setNoTasksIndicator(true, false);
                         }
                     }
 
                     @Override
                     public void onDataError() {
-                        mDaysRepository.saveDay(new Day(TimeUtils.getMidnightTime()), new DaysDataSource.UpdateDataCallback() {
+                        mDaysRepository.getToday(new DaysDataSource.GetDataCallback() {
+
+                            @Override
+                            public void onDataError() {
+                                Log.e(DayPresenter.class.getSimpleName(), "Couldn't get today");
+                            }
+
+                            @Override
+                            public void onDataLoaded(DataObject data) {
+                                loadDay(mFirstLoad);
+                            }
+                        });
+/*                        mDaysRepository.saveDay(new Day(TimeUtils.getMidnightTime()), new DaysDataSource.UpdateDataCallback() {
                             @Override
                             public void onDataUpdated(String id) {
                                 loadDay(mFirstLoad);
@@ -150,7 +185,7 @@ public class DayPresenter implements DayContract.Presenter {
                             public void onDataError() {
                                 Log.e(DayPresenter.class.getSimpleName(), "Couldn't save new day");
                             }
-                        });
+                        });*/
                     }
                 });
                 //mDaysRepository.getDayByDate
@@ -208,6 +243,7 @@ public class DayPresenter implements DayContract.Presenter {
     public void saveDay() {
         if(getCurrentDay().isPresent() && getCurrentDay().get().getCurrentTask().isPresent()) {
             mDaysRepository.setDayCurrentTask(getCurrentDay().get(), getCurrentDay().get().getCurrentTask().get());
+            mDaysRepository.setDayState(getCurrentDay().get().getId().get(), getCurrentDay().get().getState());
         }
     }
 
@@ -217,12 +253,14 @@ public class DayPresenter implements DayContract.Presenter {
             if(getCurrentDay().get().getCurrentTask().get().getState().equals(DayTask.TaskState.RUNNING)) {
                 mCurrentDay = getCurrentDay().get().setCurrentTask(getCurrentDay().get().getCurrentTask().get().pause());
                 mDayView.setPaused(true);
+                stopUpdatingTime();
             } else {
                 mCurrentDay = getCurrentDay().get().setCurrentTask(getCurrentDay().get().getCurrentTask().get().start());
                 mDayView.setPaused(false);
+                startUpdatingTime();
             }
 
-            mDaysRepository.setDayCurrentTask(getCurrentDay().get(), getCurrentDay().get().getCurrentTask().get());
+            //mDaysRepository.setDayCurrentTask(getCurrentDay().get(), getCurrentDay().get().getCurrentTask().get());
             saveDay();
         }
     }
@@ -249,6 +287,7 @@ public class DayPresenter implements DayContract.Presenter {
 
     @Override
     public void showNextTask() {
+        stopUpdatingTime();
         if(getCurrentDay().isPresent() && getCurrentDay().get().getCurrentTask().isPresent()) {
             mDaysRepository.getDayByDate(TimeUtils.getMidnightTime(), new BaseDataSource.GetDataCallback() {
                 @Override
@@ -261,6 +300,7 @@ public class DayPresenter implements DayContract.Presenter {
                                 @Override
                                 public void onDataLoaded(DataObject data) {
                                     setCurrentTask(dayTask.start(), (Task) data);
+                                    startUpdatingTime();
                                 }
 
                                 @Override
@@ -268,11 +308,13 @@ public class DayPresenter implements DayContract.Presenter {
 
                                 }
                             });
-                            mDayView.setNoTasksIndicator(false);
+                            mDayView.setNoTasksIndicator(false, false);
                             return;
                         }
                     }
-                    mDayView.setNoTasksIndicator(true);
+                    mCurrentDay = getCurrentDay().get().complete().get();
+                    saveDay();
+                    mDayView.setNoTasksIndicator(true, true);
                 }
 
                 @Override

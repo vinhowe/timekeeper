@@ -29,16 +29,16 @@ public class ExampleUnitTest {
 
     @Test
     public void compareDayTasks() {
-        DayTask dayTask1 = new DayTask("dayTask1", DayTask.TaskState.NONE, 0, lastStartTime, mAccumulatedTime, );
+/*        DayTask dayTask1 = new DayTask("dayTask1", DayTask.TaskState.NONE, 0, lastStartTime, mAccumulatedTime, );
         DayTask dayTask2 = new DayTask("dayTask2", DayTask.TaskState.NONE, 1, lastStartTime, mAccumulatedTime, );
         LinkedHashMap<String, DayTask> dayTaskHashMap = new LinkedHashMap<>();
-        System.out.println(dayTask1.compareTo(dayTask2));
+        System.out.println(dayTask1.compareTo(dayTask2));*/
     }
 
-    @Test
+/*    @Test
     public void formatTime() {
         for(int i = 0; i < 1500; i++) {
-            System.out.println(formatMinutes(i, true));
+            //System.out.println(formatMinutes(i, true));
         }
-    }
+    }*/
 }

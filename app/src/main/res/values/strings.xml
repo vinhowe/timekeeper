@@ -12,4 +12,5 @@
     <string name="dialog_set">add</string>
     <string name="dialog_cancel">cancel</string>
     <string name="addTaskLabel">add task</string>
+    <string name="day_complete">all done!</string>
 </resources>

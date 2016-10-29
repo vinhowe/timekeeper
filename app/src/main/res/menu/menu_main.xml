@@ -5,11 +5,12 @@
     <item
         android:id="@+id/action_schedule"
         android:orderInCategory="100"
-        android:icon="@drawable/ic_schedule_black_24dp"
+        android:icon="@drawable/ic_hourglass_full_black_24dp"
         android:title="@string/action_schedule"
         app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/action_settings"
+        android:icon="@drawable/ic_more_vert_white_24dp"
         android:orderInCategory="100"
         android:title="@string/action_settings"
         app:showAsAction="never" />

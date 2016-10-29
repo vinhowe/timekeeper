@@ -3,28 +3,22 @@ package com.base512.accountant.day;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatImageButton;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.base512.accountant.R;
-import com.base512.accountant.data.Day;
 import com.base512.accountant.data.Task;
-import com.base512.accountant.tasks.TasksContract;
 import com.base512.accountant.util.TimeUtils;
 import com.squareup.phrase.Phrase;
-
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -63,6 +57,9 @@ public class DayFragment extends Fragment implements DayContract.View {
 
     @BindView(R.id.taskCounter) View mContainer;
 
+    @BindView(R.id.collapsing_toolbar)
+    CollapsingToolbarLayout mCollapsingToolbarLayout;
+
     public DayFragment() {
         // Required empty public constructor
     }
@@ -84,7 +81,6 @@ public class DayFragment extends Fragment implements DayContract.View {
         ButterKnife.bind(this, root);
         mToolbar = (Toolbar) root.findViewById(R.id.toolbar);
         ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(null);
 
         mCompleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -98,7 +94,6 @@ public class DayFragment extends Fragment implements DayContract.View {
             @Override
             public void onClick(View v) {
                 mPresenter.pauseTask();
-                Toast.makeText(getContext(), "Pausing task", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -109,6 +104,9 @@ public class DayFragment extends Fragment implements DayContract.View {
                 Toast.makeText(getContext(), "Skipping task", Toast.LENGTH_LONG).show();
             }
         });
+
+        /*mCollapsingToolbarLayout.setTitle(getString(R.string.app_name));
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(getString(R.string.app_name));*/
 
         return root;
     }
@@ -142,14 +140,11 @@ public class DayFragment extends Fragment implements DayContract.View {
     public void onResume() {
         super.onResume();
         mPresenter.start();
-        mPresenter.updateTime();
-        mPresenter.startUpdatingTime();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        mPresenter.stopUpdatingTime();
         //mPresenter.pauseTask();
         mPresenter.saveDay();
     }
@@ -182,7 +177,8 @@ public class DayFragment extends Fragment implements DayContract.View {
     }
 
     @Override
-    public void setNoTasksIndicator(boolean visible) {
+    public void setNoTasksIndicator(boolean visible, boolean complete) {
+        mNoUpcomingTasksLabel.setText(complete ? R.string.day_complete : R.string.no_tasks);
         mNoUpcomingTasksLabel.setVisibility(visible ? View.VISIBLE : View.GONE);
         mContainer.setVisibility(!visible ? View.VISIBLE : View.GONE);
     }
@@ -199,7 +195,7 @@ public class DayFragment extends Fragment implements DayContract.View {
 
     @Override
     public void setTimeElapsed(long totalTime) {
-        String currentTime = TimeUtils.formatMinutes(totalTime / 60, true);
+        String currentTime = TimeUtils.formatSeconds(totalTime / 1000);
         mCurrentTaskDuration.setText(Phrase.from("{time} so far").put("time", currentTime).format());
     }
 
@@ -221,6 +217,11 @@ public class DayFragment extends Fragment implements DayContract.View {
     @Override
     public void setPaused(boolean paused) {
         mPauseButton.setImageResource(paused ? R.drawable.ic_play_arrow_white_48px : R.drawable.ic_pause_white_48px);
+    }
+
+    @Override
+    public void showSchedule() {
+        ((DayActivity)getActivity()).showSchedule();
     }
 
     @Override

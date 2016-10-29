@@ -119,7 +119,9 @@ public class TasksRepository implements TasksDataSource {
         while (children.hasNext()) {
             DataSnapshot taskSnapshot = children.next();
             Task task = getTaskFromSnapshot(taskSnapshot);
-            tasks.put(task.getId().get(), task);
+            if(task != null) {
+                tasks.put(task.getId().get(), task);
+            }
         }
 
         return tasks;
@@ -127,10 +129,13 @@ public class TasksRepository implements TasksDataSource {
 
     private Task getTaskFromSnapshot(DataSnapshot taskSnapshot) {
         Task task;
-        if(taskSnapshot.child("dynamic").getValue(Boolean.class)) {
-            task = new DynamicTask(taskSnapshot.child("label").getValue(String.class), taskSnapshot.getKey(), taskSnapshot.child("duration").getValue(Integer.class), taskSnapshot.child(
-                    "projectedDuration").getValue(Integer.class));
+        if(taskSnapshot.child("dynamic").exists()) {
+            task = new DynamicTask(taskSnapshot.child("label").getValue(String.class), taskSnapshot.getKey(), taskSnapshot.child("duration").getValue(Integer.class));
         } else {
+            System.out.println(taskSnapshot.getValue());
+            if(taskSnapshot.child("tasks").exists()) {
+                return null;
+            }
             task = new Task(taskSnapshot.child("label").getValue(String.class), taskSnapshot.getKey(), taskSnapshot.child("duration").getValue(Integer.class));
         }
         return task;

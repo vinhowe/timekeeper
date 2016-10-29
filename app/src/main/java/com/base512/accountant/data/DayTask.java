@@ -78,7 +78,7 @@ public class DayTask extends DataObject implements Comparable<DayTask> {
     }
 
     public Optional<Long> getTotalTime() {
-        if(getAccumulatedTime() == 0 || !getLastStartTime().isPresent()) {
+        if(!getLastStartTime().isPresent()) {
             return Optional.absent();
         }
         if (mState != RUNNING) {
@@ -92,7 +92,7 @@ public class DayTask extends DataObject implements Comparable<DayTask> {
         if(mState == RUNNING) {
             return this;
         }
-        return new DayTask(getId().get(), TaskState.RUNNING, getOrder().get(), now(), getAccumulatedTime() != 0 ? getAccumulatedTime() : 0);
+        return new DayTask(getId().get(), TaskState.RUNNING, getOrder().get(), now(), getAccumulatedTime());
     }
 
     public DayTask pause() {
@@ -120,6 +120,13 @@ public class DayTask extends DataObject implements Comparable<DayTask> {
 
         final long accumulatedTime = mAccumulatedTime + (now() - mLastStartTime);
         return new DayTask(getId().get(), COMPLETE, getOrder().get(), Long.MIN_VALUE, accumulatedTime);
+    }
+
+    public DayTask withOrder(int order) {
+        if(this.getOrder().get().equals(order)) {
+            return this;
+        }
+        return new DayTask(getId().isPresent() ? getId().get() : "", getState(), order, getLastStartTime().isPresent() ? getLastStartTime().get() : Long.MIN_VALUE, getAccumulatedTime());
     }
 
     public enum TaskState {

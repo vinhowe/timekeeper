@@ -10,20 +10,20 @@ import android.support.annotation.NonNull;
 
 import com.google.common.base.Optional;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 
 public class Day extends DataObject {
     private final long mDate;
     private final DayTask mCurrentTask;
     private final LinkedHashMap<String, DayTask> mTasks;
+    private final State mState;
 
-    public Day(long date, @NonNull String id, DayTask currentTask, @NonNull LinkedHashMap<String, DayTask> tasks) {
+    public Day(long date, @NonNull String id, DayTask currentTask, @NonNull LinkedHashMap<String, DayTask> tasks, @NonNull State state) {
         super(id);
         this.mDate = date;
         mCurrentTask = currentTask;
         this.mTasks = tasks;
+        mState = state;
     }
 
     public Day(long date, @NonNull String id, @NonNull LinkedHashMap<String, DayTask> tasks) {
@@ -31,6 +31,7 @@ public class Day extends DataObject {
         this.mDate = date;
         mCurrentTask = null;
         this.mTasks = tasks;
+        mState = State.NONE;
     }
 
     public Day(long date, @NonNull String id) {
@@ -38,6 +39,15 @@ public class Day extends DataObject {
         this.mDate = date;
         this.mTasks = new LinkedHashMap<>();
         mCurrentTask = null;
+        mState = State.NONE;
+    }
+
+    public Day(long date, @NonNull String id, State state) {
+        super(id);
+        this.mDate = date;
+        this.mTasks = new LinkedHashMap<>();
+        mCurrentTask = null;
+        mState = state;
     }
 
     public Day(long date) {
@@ -45,10 +55,15 @@ public class Day extends DataObject {
         this.mDate = date;
         this.mTasks = new LinkedHashMap<>();
         mCurrentTask = null;
+        mState = State.NONE;
     }
 
     public long getDate() {
         return mDate;
+    }
+
+    public State getState() {
+        return mState;
     }
 
     public Optional<DayTask> getCurrentTask() {
@@ -59,7 +74,31 @@ public class Day extends DataObject {
         return mTasks;
     }
 
+    public Optional<Day> complete() {
+        if(!getId().isPresent() || !getCurrentTask().isPresent()) {
+            return Optional.absent();
+        }
+        if(mState.equals(State.COMPLETE)) {
+            return Optional.of(this);
+        }
+        return Optional.of(new Day(getDate(), getId().get(), getCurrentTask().get(), mTasks, State.COMPLETE));
+    }
+
+    public Optional<Day> start() {
+        if(!getId().isPresent() || !getCurrentTask().isPresent()) {
+            return Optional.absent();
+        }
+        if(mState.equals(State.RUNNING)) {
+            return Optional.of(this);
+        }
+        return Optional.of(new Day(getDate(), getId().get(), getCurrentTask().get(), mTasks, State.RUNNING));
+    }
+
     public Day setCurrentTask(DayTask currentTask) {
-        return new Day(mDate, getId().get(), currentTask, mTasks);
+        return new Day(mDate, getId().get(), currentTask, mTasks, mState);
+    }
+
+    public enum State {
+        NONE, SCHEDULED, RUNNING, COMPLETE
     }
 }

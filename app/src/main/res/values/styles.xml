@@ -8,13 +8,31 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="AppTheme.NoActionBar">
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.NoActionBar">
         <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.Toolbar" parent="Widget.AppCompat.Toolbar">
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColorSecondary">@android:color/white</item>
+        <item name="colorControlNormal">@android:color/white</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="TextBold">
+        <item name="fontPath">fonts/Gilroy-ExtraBold.otf</item>
+    </style>
+
+    <style name="TextStandard">
+        <item name="android:textSize">32sp</item>
+    </style>
+
+    <style name="TextBold.Sub">
+        <item name="fontPath">fonts/Gilroy-ExtraBold.otf</item>
+        <item name="android:textSize">24sp</item>
+    </style>
 
 </resources>

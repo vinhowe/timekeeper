@@ -14,7 +14,23 @@ public class TimeUtils {
         return new LocalDate().toDateTimeAtStartOfDay().toInstant().getMillis();
     }
 
-    public static String formatMinutes(long minutes, boolean showHours) {
+    public static String formatSeconds(long seconds) {
+        long displaySeconds = seconds;
+        String secondsLabel = seconds == 1 ? "second" : "seconds";
+        String timeFields = "";
+
+        if(seconds >= 60) {
+            displaySeconds = seconds % 60;
+            secondsLabel = displaySeconds == 1 ? "second" : "seconds";
+            timeFields = formatMinutes(seconds / 60);
+        }
+        return Phrase.from((timeFields.isEmpty() ? "" : "{time_fields} ")+"{seconds} {seconds_label}")
+                .putOptional("time_fields", timeFields)
+                .put("seconds", String.valueOf(displaySeconds))
+                .put("seconds_label", secondsLabel).format().toString();
+    }
+
+    public static String formatMinutes(long minutes) {
         long displayMinutes = minutes;
         String minutesLabel = minutes == 1 ? "minute" : "minutes";
         String timeFields = "";
