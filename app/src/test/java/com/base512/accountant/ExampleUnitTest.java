@@ -1,16 +1,28 @@
 package com.base512.accountant;
 
+import android.support.annotation.NonNull;
+
+import com.base512.accountant.data.DayOfWeekSchedule;
+import com.base512.accountant.data.DayOfYearSchedule;
 import com.base512.accountant.data.DayTask;
+import com.squareup.phrase.ListPhrase;
+
+import net.danlew.android.joda.JodaTimeAndroid;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
+import org.joda.time.DateTimeFieldType;
 import org.joda.time.LocalTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 
 import static com.base512.accountant.util.TimeUtils.formatMinutes;
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 
 /**
@@ -33,6 +45,37 @@ public class ExampleUnitTest {
         DayTask dayTask2 = new DayTask("dayTask2", DayTask.TaskState.NONE, 1, lastStartTime, mAccumulatedTime, );
         LinkedHashMap<String, DayTask> dayTaskHashMap = new LinkedHashMap<>();
         System.out.println(dayTask1.compareTo(dayTask2));*/
+
+        DayOfWeekSchedule schedule = new DayOfWeekSchedule(new boolean[]{false,true,false,false,false,false,true});
+
+        assertEquals(true, schedule.checkScheduleForDate(new DateTime()));
+    }
+
+    @Test
+    public void dayOfYearSchedule() {
+        DayOfYearSchedule schedule = new DayOfYearSchedule(new int[]{1,2, 334});
+
+        assertEquals(true, schedule.checkScheduleForDate(new DateTime()));
+    }
+
+    @Test
+    public void makeFormattedWeekSchedule() {
+        boolean[] weekSchedule = new boolean[]{true, true, false, true, true, true, true};
+        ArrayList<String> dayNames = new ArrayList<>();
+
+        for(int i = 0; i < weekSchedule.length; i++) {
+            if(weekSchedule[i]) {
+                DateTime weekDayDate = new DateTime().withDayOfWeek(i+1);
+                dayNames.add(weekDayDate.property(DateTimeFieldType.dayOfWeek()).getAsText());
+            }
+        }
+
+        System.out.println(makeOxfordFormattedList(dayNames));
+    }
+
+    public static String makeOxfordFormattedList(@NonNull Iterable<String> items) {
+        ListPhrase listFormatter = ListPhrase.from(" and ", ", ", ", and ");
+        return listFormatter.join(items).toString();
     }
 
 /*    @Test

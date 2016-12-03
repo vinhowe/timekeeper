@@ -20,7 +20,13 @@
             android:background="?attr/colorPrimary"
             android:minHeight="?attr/actionBarSize"
             style="@style/Widget.AppCompat.Toolbar"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" >
+            <Spinner
+                android:id="@+id/spinner_nav"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </android.support.v7.widget.Toolbar>
     </android.support.design.widget.AppBarLayout>
 
     <android.support.design.widget.CoordinatorLayout

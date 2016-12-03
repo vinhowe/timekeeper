@@ -8,6 +8,10 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 
 import com.base512.accountant.R;
 import com.base512.accountant.data.Task;
@@ -17,16 +21,17 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
- * A fragment representing a list of Items.
- * <p/>
- * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
- * interface.
+ * Fragment for modifying schedule
  */
-public class ScheduleFragment extends Fragment implements ScheduleContract.View, TaskDialogFragment.TaskLabelDialogHandler {
+public class ScheduleFragment extends Fragment implements ScheduleContract.View, TaskDialogFragment.TaskLabelDialogHandler, AdapterView.OnItemSelectedListener {
 
-    private OnFragmentInteractionListener mListener;
+    //private OnFragmentInteractionListener mListener;
+    private AdapterView.OnItemSelectedListener mSpinnerListener;
 
     @BindView(R.id.scheduleView) RecyclerView mRecyclerView;
+    Spinner mSpinner;
+
+
     private ScheduleContract.Presenter mPresenter;
 
     /**
@@ -57,6 +62,10 @@ public class ScheduleFragment extends Fragment implements ScheduleContract.View,
         View view = inflater.inflate(R.layout.fragment_schedule, container, false);
 
         ButterKnife.bind(this, view);
+
+        mSpinner = (Spinner) getActivity().findViewById(R.id.spinner_nav);
+        mSpinner.setOnItemSelectedListener(this);
+
         mRecyclerView.setHasFixedSize(true);
 
         return view;
@@ -65,18 +74,18 @@ public class ScheduleFragment extends Fragment implements ScheduleContract.View,
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
+        /*if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
-        }
+        }*/
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        //mListener = null;
     }
 
     @Override
@@ -116,6 +125,17 @@ public class ScheduleFragment extends Fragment implements ScheduleContract.View,
     }
 
     @Override
+    public void setSpinnerItems(String[] spinnerStrings) {
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_dropdown_item, spinnerStrings);
+        mSpinner.setAdapter(spinnerAdapter);
+    }
+
+    @Override
+    public void setSpinnerItemSelectedListener(AdapterView.OnItemSelectedListener spinnerItemSelectedListener) {
+        mSpinnerListener = spinnerItemSelectedListener;
+    }
+
+    @Override
     public void showAddTaskUI(TaskDialogFragment taskDialogFragment) {
         taskDialogFragment.show(getChildFragmentManager(), "addTask");
     }
@@ -135,8 +155,20 @@ public class ScheduleFragment extends Fragment implements ScheduleContract.View,
         mPresenter.addTask(task, isNew);
     }
 
-    public interface OnFragmentInteractionListener {
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        if(mSpinnerListener != null) {
+            mSpinnerListener.onItemSelected(adapterView, view, i, l);
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+        // Don't think we care but this might be important
+    }
+
+    /*public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onListFragmentInteraction(Task task);
-    }
+    }*/
 }

@@ -8,14 +8,14 @@ import java.util.LinkedHashMap;
 
 public class Routine extends Task {
 
-    private final LinkedHashMap<String, Task> mTasks;
+    private final LinkedHashMap<String, ConditionalTask> mTasks;
 
-    public Routine(String label, String id, int estimatedDuration, LinkedHashMap<String, Task> tasks) {
+    public Routine(String label, String id, int estimatedDuration, LinkedHashMap<String, ConditionalTask> tasks) {
         super(label, id, estimatedDuration);
         mTasks = tasks;
     }
 
-    public LinkedHashMap<String, Task> getTasks() {
+    public LinkedHashMap<String, ConditionalTask> getConditionalTasks() {
         return mTasks;
     }
 }

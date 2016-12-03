@@ -9,12 +9,12 @@ import java.util.LinkedHashMap;
  * Created by Thomas on 9/9/2016.
  */
 public interface BaseDataSource {
-    interface LoadDataCallback extends AccessDataCallback {
-        void onDataLoaded(LinkedHashMap<String, DataObject> data);
+    interface LoadDataCallback<T extends DataObject> extends AccessDataCallback {
+        void onDataLoaded(LinkedHashMap<String, T> data);
     }
 
-    interface GetDataCallback extends AccessDataCallback {
-        void onDataLoaded(DataObject data);
+    interface GetDataCallback<T extends DataObject> extends AccessDataCallback {
+        void onDataLoaded(T data);
     }
 
     interface UpdateDataCallback extends AccessDataCallback {

@@ -9,6 +9,9 @@ package com.base512.accountant.data.source.tasks;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import com.base512.accountant.data.source.schedules.SchedulesDataSource;
+import com.base512.accountant.data.source.schedules.SchedulesRepository;
+
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -18,7 +21,7 @@ import dagger.Provides;
 public class TasksRepositoryModule {
     @Singleton
     @Provides
-    TasksRepository provideTasksRepository(DatabaseReference reference) {
-        return new TasksRepository(reference);
+    TasksRepository provideTasksRepository(DatabaseReference reference, SchedulesRepository schedulesRepository) {
+        return new TasksRepository(reference, schedulesRepository);
     }
 }

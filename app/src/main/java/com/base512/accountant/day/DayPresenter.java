@@ -12,6 +12,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.base512.accountant.data.ConditionalTask;
 import com.base512.accountant.data.DataObject;
 import com.base512.accountant.data.Day;
 import com.base512.accountant.data.DayTask;
@@ -94,7 +95,7 @@ public class DayPresenter implements DayContract.Presenter {
     }
 
     @Override
-    public void setCurrentTask(@NonNull DayTask dayTask, @NonNull Task task) {
+    public void setCurrentTask(@NonNull DayTask dayTask, @NonNull ConditionalTask task) {
         Log.d(DayPresenter.class.getSimpleName(), dayTask.getState().toString());
         mCurrentDay = mCurrentDay.setCurrentTask((dayTask.getState() == DayTask.TaskState.NONE) ? dayTask.start() : dayTask);
         if(dayTask.getState() == DayTask.TaskState.PAUSED) {
@@ -127,22 +128,21 @@ public class DayPresenter implements DayContract.Presenter {
         }
         Log.d(DayPresenter.class.getSimpleName(), "loading tasks");
 
-        mTasksRepository.getTasks(new TasksDataSource.LoadDataCallback() {
+        mTasksRepository.getTasks(new TasksDataSource.LoadDataCallback<Task>() {
             @Override
-            public void onDataLoaded(final LinkedHashMap<String, DataObject> tasks) {
-                final LinkedHashMap<String, Task> tasksToShow = new LinkedHashMap<>();
-                mDaysRepository.getDayByDate(TimeUtils.getMidnightTime(), new DaysDataSource.GetDataCallback() {
+            public void onDataLoaded(final LinkedHashMap<String, Task> tasks) {
+                final LinkedHashMap<String, ConditionalTask> tasksToShow = new LinkedHashMap<>();
+                mDaysRepository.getDayByDate(TimeUtils.getMidnightTime(), new DaysDataSource.GetDataCallback<Day>() {
                     @Override
-                    public void onDataLoaded(DataObject dataObject) {
-                        Day day = (Day) dataObject;
+                    public void onDataLoaded(Day day) {
                         if(day.getTasks().size() > 0) {
                             for (DayTask dayTask : day.getTasks().values()) {
-                                Task task = (Task)tasks.get(dayTask.getId().get());
-                                tasksToShow.put(task.getId().get(), task);
+                                Task task = tasks.get(dayTask.getId().get());
+                                tasksToShow.put(task.getId().get(), new ConditionalTask(task));
                             }
                             mCurrentDay = day;
                             if(mCurrentDay.getCurrentTask().isPresent()) {
-                                setCurrentTask(day.getCurrentTask().get(), (Task) tasks.get(day.getCurrentTask().get().getId().get()));
+                                setCurrentTask(day.getCurrentTask().get(), new ConditionalTask(tasks.get(day.getCurrentTask().get().getId().get())));
                                 tasksToShow.remove(day.getCurrentTask().get().getId().get());
                                 mTasksAdapter.updateTasksList(new ArrayList(tasksToShow.values()), false);
                             } else {
@@ -175,7 +175,7 @@ public class DayPresenter implements DayContract.Presenter {
                                 loadDay(mFirstLoad);
                             }
                         });
-/*                        mDaysRepository.saveDay(new Day(TimeUtils.getMidnightTime()), new DaysDataSource.UpdateDataCallback() {
+/*                        mDaysRepository.saveDay(new DayOfWeek(TimeUtils.getMidnightTime()), new DaysDataSource.UpdateDataCallback() {
                             @Override
                             public void onDataUpdated(String id) {
                                 loadDay(mFirstLoad);
@@ -295,11 +295,11 @@ public class DayPresenter implements DayContract.Presenter {
                     Day today = (Day) data;
                     for(final DayTask dayTask : today.getTasks().values()) {
                         if(dayTask.getState() == DayTask.TaskState.NONE) {
-                            mTasksRepository.getTask(dayTask.getId().get(), new TasksDataSource.GetDataCallback() {
+                            mTasksRepository.getTask(dayTask.getId().get(), new TasksDataSource.GetDataCallback<Task>() {
 
                                 @Override
-                                public void onDataLoaded(DataObject data) {
-                                    setCurrentTask(dayTask.start(), (Task) data);
+                                public void onDataLoaded(Task task) {
+                                    setCurrentTask(dayTask.start(), new ConditionalTask(task));
                                     startUpdatingTime();
                                 }
 

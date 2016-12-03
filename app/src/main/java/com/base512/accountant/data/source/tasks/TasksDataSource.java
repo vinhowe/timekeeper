@@ -9,17 +9,17 @@ package com.base512.accountant.data.source.tasks;
 
 import android.support.annotation.NonNull;
 
+import com.base512.accountant.data.Schedule;
 import com.base512.accountant.data.Task;
-import com.base512.accountant.data.source.AccessDataCallback;
 import com.base512.accountant.data.source.BaseDataSource;
-
-import java.util.LinkedHashMap;
 
 public interface TasksDataSource extends BaseDataSource {
 
     void getTasks(@NonNull LoadDataCallback callback);
 
-    void getTask(@NonNull String taskId, @NonNull GetDataCallback callback);
+    void getTask(@NonNull String taskId, @NonNull GetDataCallback<Task> callback);
+
+    void getTasksFromRoutine(@NonNull String routineId, @NonNull GetDataCallback<Task> callback);
 
     void saveTask(@NonNull Task task, @NonNull UpdateDataCallback callback);
 
@@ -28,4 +28,6 @@ public interface TasksDataSource extends BaseDataSource {
     void setTaskDynamic(@NonNull String taskId, boolean isDynamic);
 
     void setTaskDuration(@NonNull String taskId, int duration);
+
+    void setTaskSchedule(@NonNull String taskId, @NonNull Schedule schedule);
 }

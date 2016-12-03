@@ -182,8 +182,8 @@ public class DaysRepository implements DaysDataSource {
 
     @Override
     public void addDayTask(@NonNull String dayId, @NonNull final DayTask dayTask) {
-        checkNotNull(dayId, "Day ID cannot be null");
-        checkArgument(dayId.length() > 0, "Day ID cannot be empty");
+        checkNotNull(dayId, "DayOfWeek ID cannot be null");
+        checkArgument(dayId.length() > 0, "DayOfWeek ID cannot be empty");
         checkNotNull(dayTask, "Task cannot be null");
 
         final DatabaseReference dayTasksReference = mDatabaseReference.child(dayId).child("tasks");
@@ -207,8 +207,8 @@ public class DaysRepository implements DaysDataSource {
 
     @Override
     public void addDayTask(@NonNull Day day, @NonNull DayTask dayTask) {
-        checkNotNull(day, "Day cannot be null");
-        checkArgument(day.getId().isPresent(), "Day is not a reference");
+        checkNotNull(day, "DayOfWeek cannot be null");
+        checkArgument(day.getId().isPresent(), "DayOfWeek is not a reference");
         checkNotNull(dayTask, "Task cannot be null");
         addDayTask(day.getId().get(), dayTask);
     }

@@ -1,8 +1,10 @@
 package com.base512.accountant.tasks;
 
+import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,8 +12,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.base512.accountant.R;
+import com.base512.accountant.data.ConditionalTask;
 import com.base512.accountant.data.DataObject;
-import com.base512.accountant.data.Task;
+import com.base512.accountant.data.DayOfWeekSchedule;
 import com.base512.accountant.data.User;
 import com.base512.accountant.data.source.BaseDataSource;
 import com.base512.accountant.data.source.tasks.TaskViewHolder;
@@ -36,7 +39,7 @@ import static com.base512.accountant.util.TimeUtils.formatMinutes;
 
 public class TasksAdapter extends RecyclerView.Adapter implements ItemTouchHelperAdapter {
 
-    public ArrayList<Task> mTasks = new ArrayList<>();
+    public ArrayList<ConditionalTask> mTasks = new ArrayList<>();
 
     private boolean mIsSchedule = false;
 
@@ -64,26 +67,31 @@ public class TasksAdapter extends RecyclerView.Adapter implements ItemTouchHelpe
         final TaskViewHolder taskViewHolder = mIsSchedule ? new ScheduleTasksViewHolder(parent, this) : new OverviewTaskViewHolder(parent);
         if(mIsSchedule) {
             scheduleChangeListeners.add((ScheduleChangeListener) taskViewHolder);
+            taskViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onScheduleTaskClicked(v.getContext(), taskViewHolder.getAdapterPosition());
+                }
+            });
         }
-        taskViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onRepositoryItemClicked(taskViewHolder.getAdapterPosition());
-            }
-        });
+
         return taskViewHolder;
+    }
+
+    private void onScheduleTaskClicked(Context context, int adapterPosition) {
+        Log.d(TasksAdapter.class.getSimpleName(), "Clicked on "+mTasks.get(adapterPosition).getTask());
     }
 
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
-        Task task = mTasks.get(position);
+        ConditionalTask task = mTasks.get(position);
         ((TaskViewHolder) holder).bind(mTasks.get(position));
 
     }
 
     @Override
     public int getItemViewType(int position) {
-        return mTasks.get(position).getId().isPresent() ? 1 : 0;
+        return mTasks.get(position).getTask().getId().isPresent() ? 1 : 0;
     }
 
     @Override
@@ -91,15 +99,16 @@ public class TasksAdapter extends RecyclerView.Adapter implements ItemTouchHelpe
         return mTasks.size();
     }
 
-    private void onRepositoryItemClicked(int adapterPosition) {
+/*    private void onTaskClicked(int adapterPosition) {
         //repositoriesListActivity.onRepositoryClick(repositories.get(adapterPosition));
-    }
+
+    }*/
 
     public void addChangeListener(ScheduleChangeListener scheduleChangeListener) {
         scheduleChangeListeners.add(scheduleChangeListener);
     }
 
-    public void updateTasksList(ArrayList<Task> tasks, boolean schedule) {
+    public void updateTasksList(ArrayList<ConditionalTask> tasks, boolean schedule) {
         mIsSchedule = schedule;
         mTasks.clear();
         mTasks.addAll(tasks);
@@ -109,7 +118,7 @@ public class TasksAdapter extends RecyclerView.Adapter implements ItemTouchHelpe
     protected static String getTimeForPosition(int position, TasksAdapter tasksAdapter) {
         LocalTime taskTime = new LocalTime().withMillisOfDay(mWakeupTime*60*1000);
         for(int i = 0; i < position; i++) {
-            taskTime = taskTime.plusMinutes(tasksAdapter.mTasks.get(i).getDuration());
+            taskTime = taskTime.plusMinutes(tasksAdapter.mTasks.get(i).getTask().getDuration());
         }
 
         return taskTime.toString("HH:mm");
@@ -150,10 +159,10 @@ public class TasksAdapter extends RecyclerView.Adapter implements ItemTouchHelpe
         }
 
         @Override
-        public void bind(Task task) {
-            mTaskLabel.setText(task.getLabel());
-            mTaskDuration.setText(formatMinutes(task.getDuration()));
-            float timePosition = (Math.min(1, (float)task.getDuration() / 60f) * mBackgroundColors.length())-1f;
+        public void bind(ConditionalTask conditionalTask) {
+            mTaskLabel.setText(conditionalTask.getTask().getLabel());
+            mTaskDuration.setText(formatMinutes(conditionalTask.getTask().getDuration()));
+            float timePosition = (Math.min(1, (float)conditionalTask.getTask().getDuration() / 60f) * mBackgroundColors.length())-1f;
             itemView.setBackgroundColor(mBackgroundColors.getColor((int)timePosition,0));
             if(timePosition >= TEXT_INVERSE_POSITION) {
                 invertText(true);
@@ -175,13 +184,14 @@ public class TasksAdapter extends RecyclerView.Adapter implements ItemTouchHelpe
 
     }
 
-    static class ScheduleTasksViewHolder extends TaskViewHolder implements ItemTouchHelperViewHolder, ScheduleChangeListener {
+    static class ScheduleTasksViewHolder extends TaskViewHolder implements ItemTouchHelperViewHolder, ScheduleChangeListener, View.OnClickListener {
 
         @BindView(R.id.taskBackground) View mTaskBackground;
         @BindView(R.id.taskStartTimeLabel) TextView mTaskStartTimeLabel;
         @BindView(R.id.taskTitleLabel) TextView mTaskTitleLabel;
         @BindView(R.id.taskDurationIcon) ImageView mTaskDurationIcon;
         @BindView(R.id.taskDurationLabel) TextView mTaskDurationLabel;
+        @BindView(R.id.taskConditionLabel) TextView mTaskConditionLabel;
 
         protected final TasksAdapter mTasksAdapter;
 
@@ -190,15 +200,24 @@ public class TasksAdapter extends RecyclerView.Adapter implements ItemTouchHelpe
             mTasksAdapter = tasksAdapter;
             ButterKnife.bind(this, itemView);
             mBackgroundColors = itemView.getContext().getResources().obtainTypedArray(R.array.palette);
+
         }
 
         @Override
-        public void bind(Task task) {
-            mTaskTitleLabel.setText(task.getLabel());
-            mTaskDurationLabel.setText(formatMinutes(task.getDuration()));
-            float timePosition = (Math.min(1, (float)task.getDuration() / 60f) * mBackgroundColors.length())-1f;
+        public void bind(ConditionalTask task) {
+            mTaskTitleLabel.setText(task.getTask().getLabel());
+            mTaskDurationLabel.setText(formatMinutes(task.getTask().getDuration()));
+            float timePosition = (Math.min(1, (float)task.getTask().getDuration() / 60f) * mBackgroundColors.length())-1f;
             mTaskBackground.setBackgroundColor(mBackgroundColors.getColor((int)timePosition,0));
             mTaskStartTimeLabel.setText(getTimeForPosition(getAdapterPosition(), mTasksAdapter));
+            if(task.getSchedule().isPresent()) {
+                if(task.getSchedule().get() instanceof DayOfWeekSchedule) {
+                    DayOfWeekSchedule weekSchedule = (DayOfWeekSchedule) task.getSchedule().get();
+                    mTaskConditionLabel.setText(weekSchedule.getHumanSummary().toLowerCase());
+                }
+            } else {
+                mTaskConditionLabel.setVisibility(View.GONE);
+            }
             if(timePosition >= TEXT_INVERSE_POSITION) {
                 invertText(true);
             } else {
@@ -236,6 +255,11 @@ public class TasksAdapter extends RecyclerView.Adapter implements ItemTouchHelpe
             /*if(timePosition >= TEXT_INVERSE_POSITION) {
                 invertText();
             }*/
+        }
+
+        @Override
+        public void onClick(View view) {
+            Log.d(TasksAdapter.class.getSimpleName(), "Clicked on "+mTasksAdapter.mTasks.get(getAdapterPosition()).getTask().getLabel());
         }
     }
 

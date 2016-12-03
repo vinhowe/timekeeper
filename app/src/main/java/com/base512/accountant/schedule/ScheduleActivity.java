@@ -13,6 +13,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Spinner;
 
 import com.base512.accountant.AccountantApplication;
 import com.base512.accountant.ApplicationModule;
@@ -25,7 +26,7 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class ScheduleActivity extends AppCompatActivity implements ScheduleFragment.OnFragmentInteractionListener, TaskDialogFragment.TaskLabelDialogHandler {
+public class ScheduleActivity extends AppCompatActivity implements TaskDialogFragment.TaskLabelDialogHandler {
 
     @Inject SchedulePresenter mSchedulePresenter;
 
@@ -33,6 +34,7 @@ public class ScheduleActivity extends AppCompatActivity implements ScheduleFragm
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.fabAddTask) FloatingActionButton mFAB;
+    @BindView(R.id.spinner_nav) Spinner mSpinner;
 
     public static void tintMenuIcon(Context context, MenuItem item, @ColorRes int color) {
         Drawable normalDrawable = item.getIcon();
@@ -53,6 +55,7 @@ public class ScheduleActivity extends AppCompatActivity implements ScheduleFragm
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,6 +72,7 @@ public class ScheduleActivity extends AppCompatActivity implements ScheduleFragm
             ActivityUtils.addFragmentToActivity(
                     getSupportFragmentManager(), mScheduleFragment, R.id.contentFrame);
         }
+
 
         final ScheduleFragment finalScheduleFragment = mScheduleFragment;
         mFAB.setOnClickListener(new View.OnClickListener() {
@@ -118,11 +122,6 @@ public class ScheduleActivity extends AppCompatActivity implements ScheduleFragm
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-    }
-
-    @Override
-    public void onListFragmentInteraction(Task task) {
-
     }
 
     @Override

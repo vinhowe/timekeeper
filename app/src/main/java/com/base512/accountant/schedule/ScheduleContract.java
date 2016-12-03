@@ -9,9 +9,13 @@ package com.base512.accountant.schedule;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.SpinnerAdapter;
 
 import com.base512.accountant.BasePresenter;
 import com.base512.accountant.BaseView;
+import com.base512.accountant.data.Routine;
 import com.base512.accountant.data.Task;
 import com.base512.accountant.tasks.TasksAdapter;
 
@@ -30,6 +34,10 @@ public interface ScheduleContract {
 
         void setNoTasksIndicator(boolean visible);
 
+        void setSpinnerItems(String[] spinnerStrings);
+
+        void setSpinnerItemSelectedListener(AdapterView.OnItemSelectedListener listener);
+
         void showAddTaskUI(TaskDialogFragment taskDialogFragment);
 
         boolean isActive();
@@ -46,6 +54,10 @@ public interface ScheduleContract {
         void removeTask(@NonNull Task task);
 
         void createTask();
+
+        void initializeSchedules();
+
+        void setRoutine(@NonNull String routineId);
 
         void saveTasks();}
 }
