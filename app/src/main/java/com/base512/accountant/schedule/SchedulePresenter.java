@@ -14,29 +14,27 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 
-import com.base512.accountant.data.ConditionalTask;
-import com.base512.accountant.data.DataObject;
 import com.base512.accountant.data.Day;
 import com.base512.accountant.data.DayTask;
 import com.base512.accountant.data.Routine;
+import com.base512.accountant.data.Schedule;
 import com.base512.accountant.data.Task;
 import com.base512.accountant.data.source.BaseDataSource;
-import com.base512.accountant.data.source.days.DaysDataSource;
 import com.base512.accountant.data.source.days.DaysRepository;
 import com.base512.accountant.data.source.tasks.TasksDataSource;
 import com.base512.accountant.data.source.tasks.TasksRepository;
 import com.base512.accountant.data.source.user.UserRepository;
 import com.base512.accountant.tasks.TasksAdapter;
-import com.base512.accountant.util.TimeUtils;
 import com.base512.accountant.views.OnDragStartListener;
 import com.base512.accountant.views.SimpleItemTouchHelperCallback;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 import javax.inject.Inject;
 
-public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStartListener, AdapterView.OnItemSelectedListener{
+public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStartListener, AdapterView.OnItemSelectedListener, TasksAdapter.ScheduleInteractionListener, ScheduleContract.View.RoutineModificationListener {
 
     private final ScheduleContract.View mScheduleView;
     private final DaysRepository mDaysRepository;
@@ -47,6 +45,10 @@ public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStar
     private final SimpleItemTouchHelperCallback mItemTouchCallback;
 
     private Day mCurrentDay;
+
+    private LinkedHashMap<String, Routine> mUpdatedRoutines;
+
+    private Routine mCurrentRoutine;
 
     private boolean mFirstLoad = true;
 
@@ -72,6 +74,10 @@ public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStar
         mTasksAdapter = tasksAdapter;
         mLinearLayoutManager = linearLayoutManager;
         mItemTouchCallback = new SimpleItemTouchHelperCallback(tasksAdapter);
+
+        mTasksAdapter.addInteractionListener(this);
+
+        mUpdatedRoutines = new LinkedHashMap<>();
     }
 
     @Inject
@@ -86,7 +92,7 @@ public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStar
 
     @Override
     public void loadSchedule(boolean forceUpdate) {
-        loadTasks(forceUpdate || mFirstLoad, true);
+        // loadTasks(forceUpdate || mFirstLoad, true);
         mFirstLoad = false;
     }
 
@@ -97,7 +103,7 @@ public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStar
                 @Override
                 public void onDataUpdated(String id) {
                     //mDaysRepository.addDayTask(mCurrentDay, new DayTask(id, DayTask.TaskState.NONE));\
-                    mTasksAdapter.mTasks.add(new ConditionalTask(new Task(task.getLabel(), id, task.getDuration())));
+                    mTasksAdapter.mTasks.add(new Task(task.getLabel(), id, task.getDuration(), null));
                     mTasksAdapter.notifyDataSetChanged();
                     saveTasks();
                     //loadSchedule(true);
@@ -110,7 +116,7 @@ public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStar
             });
         } else {
             //mDaysRepository.addDayTask(mCurrentDay, new DayTask(task));
-            mTasksAdapter.mTasks.add(new ConditionalTask(task));
+            mTasksAdapter.mTasks.add(task);
             mTasksAdapter.notifyDataSetChanged();
             saveTasks();
             //loadSchedule(true);
@@ -148,20 +154,29 @@ public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStar
 
     @Override
     public void setRoutine(@NonNull final String routineId) {
-        mTasksRepository.getTasks(new BaseDataSource.LoadDataCallback<Task>() {
+        mTasksRepository.getTask(routineId, new BaseDataSource.GetDataCallback<Task>() {
             @Override
-            public void onDataLoaded(LinkedHashMap<String, Task> data) {
-                mTasksRepository.getTask(routineId, new BaseDataSource.GetDataCallback() {
-                    @Override
-                    public void onDataLoaded(DataObject data) {
-                        Log.d(SchedulePresenter.class.getSimpleName(), "Loaded new routine");
+            public void onDataLoaded(Task task) {
+                Log.d(SchedulePresenter.class.getSimpleName(), "Loaded new routine");
+                if(task instanceof Routine) {
+
+                    Routine routine = (Routine) task;
+
+                    mCurrentRoutine = routine;
+
+                    ArrayList<Task> tasksToShow = new ArrayList<>();
+
+                    Log.d(TAG, String.valueOf(routine.getConditionalTasks().values().size()));
+
+                    for(Task childTask : routine.getConditionalTasks().values()) {
+                        tasksToShow.add(childTask);
                     }
 
-                    @Override
-                    public void onDataError() {
-
-                    }
-                });
+                    mTasksAdapter.updateTasksList(tasksToShow, true);
+                    mScheduleView.setTasksAdapter(mTasksAdapter);
+                } else {
+                    Log.d(TAG, routineId+" is not a routine");
+                }
             }
 
             @Override
@@ -173,17 +188,20 @@ public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStar
 
     @Override
     public void saveTasks() {
-        LinkedHashMap<String, DayTask> tasks = new LinkedHashMap<>();
-        for(ConditionalTask task : mTasksAdapter.mTasks) {
-            tasks.put(task.getTask().getId().get(), new DayTask(task.getTask().getId().get(), DayTask.TaskState.NONE));
+
+
+
+        /*LinkedHashMap<String, DayTask> tasks = new LinkedHashMap<>();
+        for(Task task : mTasksAdapter.mTasks) {
+            tasks.put(task.getId().get(), new DayTask(task.getId().get(), DayTask.TaskState.NONE));
         }
         mCurrentDay = new Day(mCurrentDay.getDate(), mCurrentDay.getId().get(), tasks);
         LinkedHashMap<String, DayTask> updatedDayTasks = new LinkedHashMap<>();
         for (int i = 0; i < mTasksAdapter.mTasks.size(); i++) {
-            if(mDayTasks.containsKey(mTasksAdapter.mTasks.get(i).getTask().getId().get())) {
-                updatedDayTasks.put(mTasksAdapter.mTasks.get(i).getTask().getId().get(), mDayTasks.get(mTasksAdapter.mTasks.get(i).getTask().getId().get()).withOrder(i));
+            if(mDayTasks.containsKey(mTasksAdapter.mTasks.get(i).getId().get())) {
+                updatedDayTasks.put(mTasksAdapter.mTasks.get(i).getId().get(), mDayTasks.get(mTasksAdapter.mTasks.get(i).getId().get()).withOrder(i));
             } else {
-                updatedDayTasks.put(mTasksAdapter.mTasks.get(i).getTask().getId().get(), new DayTask(mTasksAdapter.mTasks.get(i).getTask()).withOrder(i));
+                updatedDayTasks.put(mTasksAdapter.mTasks.get(i).getId().get(), new DayTask(mTasksAdapter.mTasks.get(i)).withOrder(i));
             }
         }
         mDaysRepository.updateDayTasks(mCurrentDay, new ArrayList<>(mDayTasks.values()), updatedDayTasks, new BaseDataSource.UpdateDataCallback() {
@@ -196,7 +214,7 @@ public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStar
             public void onDataError() {
 
             }
-        });
+        });*/
     }
 
     @Override
@@ -220,18 +238,18 @@ public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStar
 
                     Routine routine = (Routine)task;
 
-                    ArrayList<ConditionalTask> tasksToShow = new ArrayList<>();
+                    ArrayList<Task> tasksToShow = new ArrayList<>();
 
                     Log.d(TAG, "baseDay is routine");
                     Log.d(TAG, String.valueOf(routine.getConditionalTasks().values().size()));
 
-                    for(ConditionalTask childTask : routine.getConditionalTasks().values()) {
+                    for(Task childTask : routine.getConditionalTasks().values()) {
                         tasksToShow.add(childTask);
                     }
                     mTasksAdapter.updateTasksList(tasksToShow, true);
                     mScheduleView.setTasksAdapter(mTasksAdapter);
                 } else {
-                    Log.d(TAG, "baseDay is not routine");
+                    Log.d(TAG, "baseDay is not a routine");
                 }
             }
 
@@ -310,6 +328,29 @@ public class SchedulePresenter implements ScheduleContract.Presenter, OnDragStar
 
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
+
+    }
+
+    @Override
+    public void onTaskClick(Task task) {
+        if (task.getId().isPresent()) {
+            setRoutine(task.getId().get());
+        }
+    }
+
+    @Override
+    public void onTaskOptionClick(Task task) {
+        TaskDialogFragment taskDialogFragment = TaskDialogFragment.newInstance(task);
+        mScheduleView.showAddTaskUI(taskDialogFragment);
+    }
+
+    @Override
+    public void onScheduleTaskRemoved(String taskId) {
+
+    }
+
+    @Override
+    public void onScheduleTaskModified(String taskId, Schedule updatedSchedule) {
 
     }
 }

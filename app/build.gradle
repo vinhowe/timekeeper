@@ -68,7 +68,7 @@ dependencies {
     androidTestCompile "com.android.support:recyclerview-v7:$rootProject.ext.supportLibraryVersion"
 
 
-    compile 'com.android.support.constraint:constraint-layout:1.0.0-beta2'
+    compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
 }
 
 apply plugin: 'com.google.gms.google-services'

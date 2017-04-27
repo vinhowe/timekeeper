@@ -1,5 +1,7 @@
 package com.base512.accountant.data;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 import com.base512.accountant.util.StringUtils;
@@ -28,4 +30,37 @@ public final class DayOfWeekSchedule extends Schedule {
     public String getHumanSummary() {
         return StringUtils.makeFormattedWeekSchedule(mDays);
     }
+
+    public boolean[] getSchedule() {
+        return mDays;
+    }
+
+    public DayOfWeekSchedule(Parcel in){
+        boolean[] days = new boolean[7];
+        in.readBooleanArray(days);
+        mDays = days;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeBooleanArray(mDays);
+    }
+
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+
+        @Override
+        public DayOfWeekSchedule createFromParcel(Parcel parcel) {
+            return new DayOfWeekSchedule(parcel);
+        }
+
+        @Override
+        public DayOfWeekSchedule[] newArray(int size) {
+            return new DayOfWeekSchedule[size];
+        }
+    };
 }

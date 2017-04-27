@@ -11,9 +11,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 
 import com.base512.accountant.R;
+import com.base512.accountant.data.Schedule;
 import com.base512.accountant.data.Task;
 import com.base512.accountant.tasks.TasksAdapter;
 
@@ -95,6 +95,12 @@ public class ScheduleFragment extends Fragment implements ScheduleContract.View,
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+        mPresenter.saveTasks();
+    }
+
+    @Override
     public void setLoadingIndicator(boolean active) {
 
     }
@@ -151,7 +157,7 @@ public class ScheduleFragment extends Fragment implements ScheduleContract.View,
     }
 
     @Override
-    public void onDialogTaskSet(Task task, int position, boolean isNew) {
+    public void onDialogTaskSet(Task task, boolean isNew) {
         mPresenter.addTask(task, isNew);
     }
 
@@ -171,4 +177,6 @@ public class ScheduleFragment extends Fragment implements ScheduleContract.View,
         // TODO: Update argument type and name
         void onListFragmentInteraction(Task task);
     }*/
+
+
 }

@@ -4,7 +4,6 @@ import android.content.res.TypedArray;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-import com.base512.accountant.data.ConditionalTask;
 import com.base512.accountant.data.Task;
 
 /**
@@ -22,5 +21,5 @@ public abstract class TaskViewHolder extends RecyclerView.ViewHolder {
         super(itemView);
     }
 
-    public abstract void bind(ConditionalTask task);
+    public abstract void bind(Task task);
 }

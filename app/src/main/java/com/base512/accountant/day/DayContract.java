@@ -11,19 +11,15 @@ import android.support.v7.widget.RecyclerView;
 
 import com.base512.accountant.BasePresenter;
 import com.base512.accountant.BaseView;
-import com.base512.accountant.data.ConditionalTask;
-import com.base512.accountant.data.Day;
 import com.base512.accountant.data.DayTask;
 import com.base512.accountant.data.Task;
-
-import java.util.List;
 
 public interface DayContract {
     interface View extends BaseView<Presenter> {
 
         void setLoadingIndicator(boolean active);
 
-        void showCurrentTask(ConditionalTask task);
+        void showCurrentTask(Task task);
 
         void setUpcomingTaskAdapter(RecyclerView.Adapter<?> taskAdapter);
 
@@ -62,7 +58,7 @@ public interface DayContract {
 
         void activateTask(@NonNull Task activeTask);
 
-        void setCurrentTask(@NonNull DayTask dayTask, @NonNull ConditionalTask task);
+        void setCurrentTask(@NonNull DayTask dayTask, @NonNull Task task);
 
         void updateTime();
 

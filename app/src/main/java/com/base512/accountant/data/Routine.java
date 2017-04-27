@@ -1,5 +1,7 @@
 package com.base512.accountant.data;
 
+import android.support.annotation.Nullable;
+
 import java.util.LinkedHashMap;
 
 /**
@@ -8,14 +10,14 @@ import java.util.LinkedHashMap;
 
 public class Routine extends Task {
 
-    private final LinkedHashMap<String, ConditionalTask> mTasks;
+    private final LinkedHashMap<String, Task> mTasks;
 
-    public Routine(String label, String id, int estimatedDuration, LinkedHashMap<String, ConditionalTask> tasks) {
-        super(label, id, estimatedDuration);
+    public Routine(String label, String id, int estimatedDuration, LinkedHashMap<String, Task> tasks, @Nullable Schedule schedule) {
+        super(label, id, estimatedDuration, schedule);
         mTasks = tasks;
     }
 
-    public LinkedHashMap<String, ConditionalTask> getConditionalTasks() {
+    public LinkedHashMap<String, Task> getConditionalTasks() {
         return mTasks;
     }
 }

@@ -16,6 +16,7 @@ import android.widget.SpinnerAdapter;
 import com.base512.accountant.BasePresenter;
 import com.base512.accountant.BaseView;
 import com.base512.accountant.data.Routine;
+import com.base512.accountant.data.Schedule;
 import com.base512.accountant.data.Task;
 import com.base512.accountant.tasks.TasksAdapter;
 
@@ -41,6 +42,11 @@ public interface ScheduleContract {
         void showAddTaskUI(TaskDialogFragment taskDialogFragment);
 
         boolean isActive();
+
+        interface RoutineModificationListener {
+            void onScheduleTaskRemoved(String taskId);
+            void onScheduleTaskModified(String taskId, Schedule updatedSchedule);
+        }
     }
 
     interface Presenter extends BasePresenter {

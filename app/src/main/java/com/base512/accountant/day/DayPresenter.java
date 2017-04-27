@@ -12,7 +12,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.base512.accountant.data.ConditionalTask;
 import com.base512.accountant.data.DataObject;
 import com.base512.accountant.data.Day;
 import com.base512.accountant.data.DayTask;
@@ -95,7 +94,7 @@ public class DayPresenter implements DayContract.Presenter {
     }
 
     @Override
-    public void setCurrentTask(@NonNull DayTask dayTask, @NonNull ConditionalTask task) {
+    public void setCurrentTask(@NonNull DayTask dayTask, @NonNull Task task) {
         Log.d(DayPresenter.class.getSimpleName(), dayTask.getState().toString());
         mCurrentDay = mCurrentDay.setCurrentTask((dayTask.getState() == DayTask.TaskState.NONE) ? dayTask.start() : dayTask);
         if(dayTask.getState() == DayTask.TaskState.PAUSED) {
@@ -131,18 +130,18 @@ public class DayPresenter implements DayContract.Presenter {
         mTasksRepository.getTasks(new TasksDataSource.LoadDataCallback<Task>() {
             @Override
             public void onDataLoaded(final LinkedHashMap<String, Task> tasks) {
-                final LinkedHashMap<String, ConditionalTask> tasksToShow = new LinkedHashMap<>();
+                final LinkedHashMap<String, Task> tasksToShow = new LinkedHashMap<>();
                 mDaysRepository.getDayByDate(TimeUtils.getMidnightTime(), new DaysDataSource.GetDataCallback<Day>() {
                     @Override
                     public void onDataLoaded(Day day) {
                         if(day.getTasks().size() > 0) {
                             for (DayTask dayTask : day.getTasks().values()) {
                                 Task task = tasks.get(dayTask.getId().get());
-                                tasksToShow.put(task.getId().get(), new ConditionalTask(task));
+                                tasksToShow.put(task.getId().get(), task);
                             }
                             mCurrentDay = day;
                             if(mCurrentDay.getCurrentTask().isPresent()) {
-                                setCurrentTask(day.getCurrentTask().get(), new ConditionalTask(tasks.get(day.getCurrentTask().get().getId().get())));
+                                setCurrentTask(day.getCurrentTask().get(), tasks.get(day.getCurrentTask().get().getId().get()));
                                 tasksToShow.remove(day.getCurrentTask().get().getId().get());
                                 mTasksAdapter.updateTasksList(new ArrayList(tasksToShow.values()), false);
                             } else {
@@ -299,7 +298,7 @@ public class DayPresenter implements DayContract.Presenter {
 
                                 @Override
                                 public void onDataLoaded(Task task) {
-                                    setCurrentTask(dayTask.start(), new ConditionalTask(task));
+                                    setCurrentTask(dayTask.start(), task);
                                     startUpdatingTime();
                                 }
 

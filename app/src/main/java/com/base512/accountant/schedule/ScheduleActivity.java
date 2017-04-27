@@ -125,7 +125,7 @@ public class ScheduleActivity extends AppCompatActivity implements TaskDialogFra
     }
 
     @Override
-    public void onDialogTaskSet(Task task, int position, boolean isNew) {
-        mScheduleFragment.onDialogTaskSet(task, position, isNew);
+    public void onDialogTaskSet(Task task, boolean isNew) {
+        mScheduleFragment.onDialogTaskSet(task, isNew);
     }
 }

@@ -35,19 +35,20 @@
         android:layout_marginTop="8dp" />
 
     <TextView
-        tools:text="very very long, "
-        android:layout_height="wrap_content"
-        android:id="@+id/taskTitleLabel"
-        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-        android:textColor="?android:attr/textColorPrimary"
-        app:layout_constraintTop_toTopOf="@+id/taskBackground"
-        app:layout_constraintStart_toStartOf="@+id/taskBackground"
-        app:layout_constraintEnd_toEndOf="@+id/taskBackground"
-        android:layout_marginTop="16dp"
-        app:layout_constraintLeft_toLeftOf="@+id/taskBackground"
-        app:layout_constraintRight_toRightOf="@+id/taskBackground"
-        android:layout_marginStart="16dp"
-        android:layout_width="0dp" />
+            tools:text="very very long, very very long"
+            android:layout_height="wrap_content"
+            android:id="@+id/taskTitleLabel"
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+            android:textColor="?android:attr/textColorPrimary"
+            app:layout_constraintTop_toTopOf="@+id/taskBackground"
+            app:layout_constraintStart_toStartOf="@+id/taskBackground"
+            app:layout_constraintEnd_toStartOf="@+id/taskOptionsButton"
+            android:layout_marginTop="16dp"
+            app:layout_constraintLeft_toLeftOf="@+id/taskBackground"
+            app:layout_constraintRight_toRightOf="@+id/taskBackground"
+            android:layout_marginStart="16dp"
+            android:layout_width="0dp"
+            app:layout_constraintHorizontal_bias="1.0"/>
 
     <ImageView
         android:layout_width="wrap_content"
@@ -89,4 +90,16 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:paddingBottom="@dimen/activity_vertical_margin"/>
+
+    <ImageButton
+            android:id="@+id/taskOptionsButton"
+            android:layout_height="36dp"
+            android:layout_width="36dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:background="?selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_more_vert_black_24dp"
+            android:cropToPadding="false"
+            app:layout_constraintRight_toRightOf="@+id/taskBackground"
+            app:layout_constraintTop_toTopOf="@+id/taskBackground"/>
 </android.support.constraint.ConstraintLayout>

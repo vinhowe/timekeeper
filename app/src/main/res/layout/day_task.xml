@@ -8,8 +8,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/colorAccentTwo"
-    tools:showIn="@layout/activity_day">
+    android:background="@color/colorAccentTwo">
     <TextView
         tools:text="Brush Teeth"
         android:id="@+id/taskLabel"

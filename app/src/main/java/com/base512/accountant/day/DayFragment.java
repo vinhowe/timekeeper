@@ -16,7 +16,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.base512.accountant.R;
-import com.base512.accountant.data.ConditionalTask;
 import com.base512.accountant.data.Task;
 import com.base512.accountant.util.TimeUtils;
 import com.squareup.phrase.Phrase;
@@ -156,8 +155,8 @@ public class DayFragment extends Fragment implements DayContract.View {
     }
 
     @Override
-    public void showCurrentTask(ConditionalTask task) {
-        mCurrentTaskTitle.setText(task.getTask().getLabel());
+    public void showCurrentTask(Task task) {
+        mCurrentTaskTitle.setText(task.getLabel());
 
         mCurrentTaskAverageDuration.setText("average duration stub");
     }

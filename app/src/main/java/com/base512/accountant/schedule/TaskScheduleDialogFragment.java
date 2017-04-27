@@ -10,10 +10,8 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -31,20 +29,11 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import com.base512.accountant.R;
-
-import com.base512.accountant.data.DayOfWeekSchedule;
 import com.base512.accountant.data.DynamicTask;
-import com.base512.accountant.data.Schedule;
 import com.base512.accountant.data.Task;
-
-import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
-
-import java.util.HashSet;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -55,39 +44,27 @@ import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN;
 /**
  * DialogFragment to edit label.
  */
-public class TaskDialogFragment extends DialogFragment {
+public class TaskScheduleDialogFragment extends DialogFragment {
 
     private static final String KEY_LABEL = "label";
     private static final String KEY_TASK = "task";
-    private static final String KEY_TASKS = "tasks";
 
     @BindView(R.id.taskTitleLabel) AutoCompleteTextView mLabelView;
     @BindView(R.id.taskDurationLabel) AppCompatEditText mDurationView;
     @BindView(R.id.taskDynamicCheckbox) CheckBox mDynamicCheckboxView;
-    @BindView(R.id.taskScheduleLayout) LinearLayout mScheduleLayout;
     private Task mTask;
     private Task[] mTasks;
-    private CompoundButton[] mDayButtons;
     private boolean mEditingDuration = false;
     private boolean mIsUnique = true;
 
-    public static TaskDialogFragment newInstance(@Nullable Task task, @Nullable Task[] tasks) {
+    public static TaskScheduleDialogFragment newInstance(Task task) {
         final Bundle args = new Bundle();
         args.putParcelable(KEY_TASK, task);
-        args.putParcelableArray(KEY_TASKS, tasks);
-        args.putString(KEY_LABEL, task != null ? task.getLabel() : null);
+        args.putString(KEY_LABEL, task.getLabel());
 
-        final TaskDialogFragment frag = new TaskDialogFragment();
+        final TaskScheduleDialogFragment frag = new TaskScheduleDialogFragment();
         frag.setArguments(args);
         return frag;
-    }
-
-    public static TaskDialogFragment newInstance(Task[] tasks) {
-        return newInstance(null, tasks);
-    }
-
-    public static TaskDialogFragment newInstance(Task task) {
-        return newInstance(task, null);
     }
 
     @Override
@@ -100,7 +77,7 @@ public class TaskDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         final Bundle bundle = getArguments();
         mTask = bundle.getParcelable(KEY_TASK);
-        mTasks = (Task[]) bundle.getParcelableArray(KEY_TASKS);
+        //mTasks = (Task[]) bundle.getParcelableArray(KEY_TASKS);
 
         final String label = savedInstanceState != null ?
                 savedInstanceState.getString(KEY_LABEL) : bundle.getString(KEY_LABEL);
@@ -118,46 +95,17 @@ public class TaskDialogFragment extends DialogFragment {
         mLabelView.setText(label);
         mLabelView.selectAll();
 
-        if(mTask == null) {
-            mDurationView.addTextChangedListener(new DurationTextChangeListener(context));
+        mDurationView.addTextChangedListener(new DurationTextChangeListener(context));
 
-            String[] taskLabels = new String[mTasks.length];
-            for (int i = 0; i < mTasks.length; i++) {
-                taskLabels[i] = mTasks[i].getLabel();
-            }
-
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
-                    android.R.layout.simple_dropdown_item_1line, taskLabels);
-
-            mLabelView.setAdapter(adapter);
-        } else {
-            mDynamicCheckboxView.setVisibility(View.GONE);
+        String[] taskLabels = new String[mTasks.length];
+        for(int i = 0; i < mTasks.length; i++) {
+            taskLabels[i] = mTasks[i].getLabel();
         }
 
-        if(mTask != null && mTask.getId().isPresent() && mTask.getSchedule() instanceof DayOfWeekSchedule) {
-            mDayButtons = new CompoundButton[Schedule.DAYS_IN_A_WEEK];
-            LayoutInflater mInflater = LayoutInflater.from(context);
-            for (int i = 0; i < Schedule.DAYS_IN_A_WEEK; i++) {
-                final CompoundButton weekScheduleDayButton = (CompoundButton) mInflater.inflate(
-                        R.layout.weekday_item, mScheduleLayout, false);
-                weekScheduleDayButton.setText(new LocalDate().withDayOfWeek(i+1).dayOfWeek().getAsText().substring(0,1).toUpperCase());
-                mScheduleLayout.addView(weekScheduleDayButton);
-                mDayButtons[i] = weekScheduleDayButton;
-            }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(),
+                android.R.layout.simple_dropdown_item_1line, taskLabels);
 
-            DayOfWeekSchedule weekSchedule = ((DayOfWeekSchedule)mTask.getSchedule());
-
-            for (int i = 0; i < Schedule.DAYS_IN_A_WEEK; i++) {
-                final CompoundButton dayButton = mDayButtons[i];
-                if (weekSchedule.checkScheduleForDate(new DateTime().withDayOfWeek(i+1))) {
-                    dayButton.setChecked(true);
-                    dayButton.setTextColor(Color.WHITE);
-                } else {
-                    dayButton.setChecked(false);
-                    dayButton.setTextColor(Color.BLACK);
-                }
-            }
-        }
+        mLabelView.setAdapter(adapter);
 
         mDurationView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -211,16 +159,20 @@ public class TaskDialogFragment extends DialogFragment {
             label = "";
         }
         label = label.toLowerCase();
-        if(mTask != null && mTask.getId().isPresent() && !mIsUnique) {
-            ((TaskLabelDialogHandler) getActivity()).onDialogTaskSet(mTask, mIsUnique);
-        } else {
-            mTask = dynamic ? new DynamicTask(label, duration) : new Task(label, duration);
-            ((TaskLabelDialogHandler) getActivity()).onDialogTaskSet(mTask, mIsUnique);
+        if (mTask != null) {
+            if(mTask.getId().isPresent() && !mIsUnique) {
+              //  ((TaskDialogFragment.TaskLabelDialogHandler) getActivity()).onDialogTaskSet(mTask, mIsUnique);
+            } else {
+                mTask = dynamic ? new DynamicTask(label, duration) : new Task(label, duration);
+               // ((TaskDialogFragment.TaskLabelDialogHandler) getActivity()).onDialogTaskSet(mTask, mIsUnique);
+            }
+
+
         }
     }
 
-    public interface TaskLabelDialogHandler {
-        void onDialogTaskSet(Task task, boolean isNew);
+    public interface TaskScheduleDialogHandler {
+        void onDialogTaskSet(Task task);
     }
 
     /**
@@ -240,6 +192,7 @@ public class TaskDialogFragment extends DialogFragment {
         public void onTextChanged(CharSequence s, int start, int before, int count) {
             final int color = TextUtils.isEmpty(s) ? colorControlNormal : colorAccent;
             mLabelView.setBackgroundTintList(ColorStateList.valueOf(color));
+
         }
 
         @Override
@@ -247,9 +200,6 @@ public class TaskDialogFragment extends DialogFragment {
 
         @Override
         public void afterTextChanged(Editable editable) {
-            if(mTask != null) {
-                return;
-            }
             for(Task task : mTasks) {
                 if(editable.toString().trim().toLowerCase().equals(task.getLabel().toLowerCase())) {
                     mDurationView.setEnabled(false);

@@ -9,14 +9,12 @@ package com.base512.accountant.data.source.tasks;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.base512.accountant.data.ConditionalTask;
 import com.base512.accountant.data.DataObject;
 import com.base512.accountant.data.DynamicTask;
 import com.base512.accountant.data.Routine;
 import com.base512.accountant.data.Schedule;
 import com.base512.accountant.data.Task;
 import com.base512.accountant.data.source.schedules.SchedulesRepository;
-import com.base512.accountant.util.TimeUtils;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -28,8 +26,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
-
-import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -172,17 +168,17 @@ public class TasksRepository implements TasksDataSource {
     private void getTaskFromSnapshot(final DataSnapshot taskSnapshot, final GetDataCallback<Task> callback) {
         final Task task;
         if(taskSnapshot.child("dynamic").exists()) {
-            task = new DynamicTask(taskSnapshot.child("label").getValue(String.class), taskSnapshot.getKey(), taskSnapshot.child("duration").getValue(Integer.class));
+            task = new DynamicTask(taskSnapshot.child("label").getValue(String.class), taskSnapshot.getKey(), taskSnapshot.child("duration").getValue(Integer.class), null);
             callback.onDataLoaded(task);
         } else {
             // System.out.println(taskSnapshot.getValue());
             if(taskSnapshot.child("tasks").exists()) {
-                final ArrayList<com.google.android.gms.tasks.Task<ConditionalTask>> loadTasks = new ArrayList<>();
+                final ArrayList<com.google.android.gms.tasks.Task<Task>> loadTasks = new ArrayList<>();
                 for(DataSnapshot childTask : taskSnapshot.child("tasks").getChildren()) {
 
                     // Task for listening for task and schedule
-                    final TaskCompletionSource<ConditionalTask> conditionalTaskTaskCompletionSource = new TaskCompletionSource<>();
-                    final com.google.android.gms.tasks.Task<ConditionalTask> conditionalTaskLoadTask = conditionalTaskTaskCompletionSource.getTask();
+                    final TaskCompletionSource<Task> conditionalTaskTaskCompletionSource = new TaskCompletionSource<>();
+                    final com.google.android.gms.tasks.Task<Task> conditionalTaskLoadTask = conditionalTaskTaskCompletionSource.getTask();
 
                     if(childTask.child("schedule").exists()) {
                         // Task for loading schedule
@@ -196,7 +192,7 @@ public class TasksRepository implements TasksDataSource {
                         Tasks.whenAll(scheduleLoadTask, taskLoadTask).addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
-                                ConditionalTask conditionalTask = new ConditionalTask(taskLoadTask.getResult(), scheduleLoadTask.getResult());
+                                Task conditionalTask = new Task(taskLoadTask.getResult(), scheduleLoadTask.getResult());
                                 conditionalTaskTaskCompletionSource.setResult(conditionalTask);
                             }
                         });
@@ -227,10 +223,11 @@ public class TasksRepository implements TasksDataSource {
                             }
                         });
                     } else {
+                        Log.d(TAG, childTask.getKey());
                         getTask(childTask.child("id").getValue(String.class), new GetDataCallback<Task>() {
                             @Override
                             public void onDataLoaded(Task task) {
-                                conditionalTaskTaskCompletionSource.setResult(new ConditionalTask(task));
+                                conditionalTaskTaskCompletionSource.setResult(task);
                             }
 
                             @Override
@@ -247,13 +244,13 @@ public class TasksRepository implements TasksDataSource {
                     @Override
                     public void onSuccess(Void aVoid) {
                         //Log.d(TAG, "Today is" + (tasks.get(0).getResult().checkScheduleForDate(DateTime.now()) ? " " : " NOT ") + "scheduled");
-                        LinkedHashMap<String, ConditionalTask> childConditionalTasks = new LinkedHashMap<>();
+                        LinkedHashMap<String, Task> childConditionalTasks = new LinkedHashMap<>();
 
-                        for(com.google.android.gms.tasks.Task<ConditionalTask> loadTask : loadTasks) {
-                            childConditionalTasks.put(loadTask.getResult().getTask().getId().get(), loadTask.getResult());
+                        for(com.google.android.gms.tasks.Task<Task> loadTask : loadTasks) {
+                            childConditionalTasks.put(loadTask.getResult().getId().get(), loadTask.getResult());
                         }
-
-                        callback.onDataLoaded(new Routine(taskSnapshot.child("label").getValue(String.class), taskSnapshot.getKey(), -1, childConditionalTasks));
+                        // TODO Don't know if this needs a schedule object
+                        callback.onDataLoaded(new Routine(taskSnapshot.child("label").getValue(String.class), taskSnapshot.getKey(), taskSnapshot.child("duration").getValue(Integer.class), childConditionalTasks, null));
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -262,7 +259,7 @@ public class TasksRepository implements TasksDataSource {
                     }
                 });
             } else {
-                task = new Task(taskSnapshot.child("label").getValue(String.class), taskSnapshot.getKey(), taskSnapshot.child("duration").getValue(Integer.class));
+                task = new Task(taskSnapshot.child("label").getValue(String.class), taskSnapshot.getKey(), taskSnapshot.child("duration").getValue(Integer.class), null);
                 callback.onDataLoaded(task);
             }
         }

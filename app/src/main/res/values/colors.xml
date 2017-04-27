@@ -14,4 +14,7 @@
         <item>#1565C0</item>
         <item>#0D47A1</item>
     </array>
+
+    <color name="weekday_background">@color/colorPrimary</color>
+    <color name="weekday_background_disabled">#FF9E9E9E</color>
 </resources>

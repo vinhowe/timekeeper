@@ -2,20 +2,31 @@ package com.base512.accountant.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 
 public class Task extends DataObject implements Parcelable {
     private final String mLabel;
     private final int mDuration;
+    private final Schedule mSchedule;
 
-    public Task(String label, String id, int duration) {
+    public Task(String label, String id, int duration, @Nullable Schedule schedule) {
         super(id);
-        this.mLabel = label;
-        this.mDuration = duration;
+        mLabel = label;
+        mDuration = duration;
+        mSchedule = schedule;
     }
 
     public Task(String label, int duration) {
-        this.mLabel = label;
-        this.mDuration = duration;
+        mLabel = label;
+        mDuration = duration;
+        mSchedule = null;
+    }
+
+    public Task(Task task, Schedule schedule) {
+        super(task.getId().get());
+        mLabel = task.getLabel();
+        mDuration = task.getDuration();
+        mSchedule = schedule;
     }
 
     public String getLabel() {
@@ -26,12 +37,15 @@ public class Task extends DataObject implements Parcelable {
         return mDuration;
     }
 
+    public Schedule getSchedule() { return mSchedule; }
+
     // Parcelling part
     public Task(Parcel in){
         super(in.readString());
 
         mLabel = in.readString();
         mDuration = in.readInt();
+        mSchedule = in.readParcelable(Schedule.class.getClassLoader());
     }
 
     @Override
